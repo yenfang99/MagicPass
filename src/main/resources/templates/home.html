@@ -2,10 +2,34 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
-  <title>Home</title>
+  <title>MagicPass</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-  <h1>Disney Ticketing - Web</h1>
-  <a href="/tickets">Purchase Ticket</a>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      MagicPass
+      <small>Theme Park Ticketing system</small>
+    </div>
+    <a class="btn btn-outline" href="/tickets">Purchase Ticket</a>
+  </div>
+</header>
+
+<main class="container">
+  <section class="card hero">
+    <h1>MagicPass - Theme Park Ticketing System</h1>
+    <p>
+      Purchase tickets with reservation date validation (within 7 days),
+      pricing breakdown (tax, discount), and checkout flow.
+    </p>
+    <div class="actions">
+      <a class="btn btn-primary" href="/tickets">Start Purchase</a>
+    </div>
+  </section>
+</main>
+
 </body>
 </html>
+

@@ -1,12 +1,16 @@
 package com.app.MagicPass.dto;
 
+import java.time.LocalDate;
+import org.springframework.format.annotation.DateTimeFormat;
+
 public class CheckoutRequest {
     private int adultQty;
     private int studentQty;
     private int childQty;
-    private String reservationDate; // dd/MM/yyyy
 
-    // For now: hardcode customerId later from login session
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) // expects yyyy-MM-dd from <input type="date">
+    private LocalDate reservationDate;
+
     private String customerId = "C0003";
 
     public int getAdultQty() { return adultQty; }
@@ -15,8 +19,9 @@ public class CheckoutRequest {
     public void setStudentQty(int studentQty) { this.studentQty = studentQty; }
     public int getChildQty() { return childQty; }
     public void setChildQty(int childQty) { this.childQty = childQty; }
-    public String getReservationDate() { return reservationDate; }
-    public void setReservationDate(String reservationDate) { this.reservationDate = reservationDate; }
+
+    public LocalDate getReservationDate() { return reservationDate; }
+    public void setReservationDate(LocalDate reservationDate) { this.reservationDate = reservationDate; }
 
     public String getCustomerId() { return customerId; }
     public void setCustomerId(String customerId) { this.customerId = customerId; }

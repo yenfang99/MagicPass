@@ -1,5 +1,8 @@
 package com.app.MagicPass.controller;
 
+
+import java.time.LocalDate;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,10 +27,12 @@ public class TicketController {
 
     @GetMapping("/tickets")
     public String tickets(Model model) {
-        model.addAttribute("req", new CheckoutRequest());
+        CheckoutRequest req = new CheckoutRequest();
+        req.setReservationDate(LocalDate.now());
+        model.addAttribute("req", req);
         return "tickets";
     }
-
+    
     @PostMapping("/tickets/preview")
     public String preview(@ModelAttribute("req") CheckoutRequest req, Model model) {
 
@@ -37,11 +42,13 @@ public class TicketController {
             return "tickets";
         }
 
-        // Validate date using legacy rule: format + within 7 days
-        try {
-            datePolicyService.parseAndValidateReservationDate(req.getReservationDate());
-        } catch (IllegalArgumentException ex) {
-            model.addAttribute("error", ex.getMessage());
+        if (req.getReservationDate() == null) {
+            model.addAttribute("error", "Please select a reservation date.");
+            return "tickets";
+        }
+
+        if (!datePolicyService.isWithin7Days(req.getReservationDate())) {
+            model.addAttribute("error", "We only provide reservation within 7 days. Please reselect.");
             return "tickets";
         }
 
@@ -49,6 +56,7 @@ public class TicketController {
         PricingBreakdown pricing = pricingService.calculate(req, 0.0);
 
         model.addAttribute("pricing", pricing);
+        model.addAttribute("req", req);
         return "payment";
     }
 }

@@ -3,32 +3,97 @@
 <head>
   <meta charset="UTF-8"/>
   <title>Purchase Ticket</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
 </head>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const display = document.getElementById("reservationDateDisplay");
+  const isoHidden = document.getElementById("reservationDateIso");
+
+  const pad = (n) => String(n).padStart(2, "0");
+  const toISO = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+  const today = new Date();
+  const max = new Date();
+  max.setDate(today.getDate() + 7);
+
+  // set default (today)
+  isoHidden.value = toISO(today);
+
+  flatpickr(display, {
+    dateFormat: "d/m/Y",     // UI display: dd/MM/yyyy
+    defaultDate: today,
+    minDate: today,
+    maxDate: max,
+    allowInput: false,       // prevent manual typing
+    disableMobile: true,     // consistent UI picker (optional)
+    onChange: function(selectedDates) {
+      if (selectedDates && selectedDates.length > 0) {
+        isoHidden.value = toISO(selectedDates[0]); // submit ISO
+      }
+    }
+  });
+});
+</script>
+
 <body>
-<h2>Purchase Ticket</h2>
-
-<form th:action="@{/tickets/preview}" th:object="${req}" method="post">
-  <div>
-    <label>Adult (RM370):</label>
-    <input type="number" th:field="*{adultQty}" min="0"/>
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      Disney Ticketing
+      <small>Purchase Ticket</small>
+    </div>
+    <a class="btn btn-outline" href="/">Home</a>
   </div>
-  <div>
-    <label>Student (RM320):</label>
-    <input type="number" th:field="*{studentQty}" min="0"/>
-  </div>
-  <div>
-    <label>Children (RM250):</label>
-    <input type="number" th:field="*{childQty}" min="0"/>
-  </div>
+</header>
 
-  <div>
-    <label>Reservation Date (dd/MM/yyyy):</label>
-    <input type="text" th:field="*{reservationDate}" placeholder="07/12/2025"/>
-  </div>
+<main class="container">
+  <section class="card">
+    <h2 style="margin-top:0;">Purchase Ticket</h2>
+    <p class="muted" style="margin-top:6px;">Select ticket quantity and reservation date.</p>
 
-  <button type="submit">Preview</button>
-</form>
+    <div th:if="${error}" class="alert" th:text="${error}"></div>
 
-<p th:if="${error}" th:text="${error}" style="color:red;"></p>
+    <form th:action="@{/tickets/preview}" th:object="${req}" method="post">
+
+      <div class="grid grid-3">
+        <div class="field">
+          <div class="label">Adult (RM370)</div>
+          <input class="input" type="number" th:field="*{adultQty}" min="0" value="0"/>
+        </div>
+
+        <div class="field">
+          <div class="label">Student (RM320)</div>
+          <input class="input" type="number" th:field="*{studentQty}" min="0" value="0"/>
+        </div>
+
+        <div class="field">
+          <div class="label">Children (RM250)</div>
+          <input class="input" type="number" th:field="*{childQty}" min="0" value="0"/>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:14px;">
+        <div class="label">Reservation Date (dd/MM/yyyy)</div>
+        <!-- what user sees -->
+        <input class="input" type="text" id="reservationDateDisplay" placeholder="Select date" />
+        <!-- hidden value that gets submitted to Spring (ISO) -->
+        <input type="hidden" th:field="*{reservationDate}" id="reservationDateIso"/>
+        <div class="hint">Reservation is allowed within 7 days only.</div>
+      </div>
+
+
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Preview Payment</button>
+        <a class="btn btn-outline" href="/">Back</a>
+      </div>
+
+    </form>
+  </section>
+</main>
+
 </body>
 </html>
