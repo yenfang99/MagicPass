@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"/><title>Payment</title></head>
+<body>
+<h2>Payment Preview</h2>
+
+<p>Total: <span th:text="${pricing.total}"></span></p>
+<p>Discount: <span th:text="${pricing.discount}"></span></p>
+<p>Tax (6%): <span th:text="${pricing.tax}"></span></p>
+<h3>Grand Total: <span th:text="${pricing.grandTotal}"></span></h3>
+
+<a href="/tickets">Back</a>
+</body>
+</html>

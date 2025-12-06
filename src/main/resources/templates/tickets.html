@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Purchase Ticket</title>
+</head>
+<body>
+<h2>Purchase Ticket</h2>
+
+<form th:action="@{/tickets/preview}" th:object="${req}" method="post">
+  <div>
+    <label>Adult (RM370):</label>
+    <input type="number" th:field="*{adultQty}" min="0"/>
+  </div>
+  <div>
+    <label>Student (RM320):</label>
+    <input type="number" th:field="*{studentQty}" min="0"/>
+  </div>
+  <div>
+    <label>Children (RM250):</label>
+    <input type="number" th:field="*{childQty}" min="0"/>
+  </div>
+
+  <div>
+    <label>Reservation Date (dd/MM/yyyy):</label>
+    <input type="text" th:field="*{reservationDate}" placeholder="07/12/2025"/>
+  </div>
+
+  <button type="submit">Preview</button>
+</form>
+
+<p th:if="${error}" th:text="${error}" style="color:red;"></p>
+</body>
+</html>
