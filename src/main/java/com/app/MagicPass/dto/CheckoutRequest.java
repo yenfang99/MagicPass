@@ -13,6 +13,9 @@ public class CheckoutRequest {
 
     private String customerId = "C0003";
 
+    // User ID for membership discount lookup
+    private Long userId;
+
     public int getAdultQty() { return adultQty; }
     public void setAdultQty(int adultQty) { this.adultQty = adultQty; }
     public int getStudentQty() { return studentQty; }
@@ -25,4 +28,7 @@ public class CheckoutRequest {
 
     public String getCustomerId() { return customerId; }
     public void setCustomerId(String customerId) { this.customerId = customerId; }
+
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 }

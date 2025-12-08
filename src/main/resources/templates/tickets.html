@@ -54,6 +54,8 @@ document.addEventListener("DOMContentLoaded", () => {
     <div th:if="${error}" class="alert" th:text="${error}"></div>
 
     <form th:action="@{/tickets/preview}" th:object="${req}" method="post">
+      <!-- Hidden userId field for membership discount lookup -->
+      <input type="hidden" th:field="*{userId}" value="1"/>
 
       <div class="grid grid-3">
         <div class="field">

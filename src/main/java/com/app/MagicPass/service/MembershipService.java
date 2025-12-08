@@ -20,7 +20,24 @@ public class MembershipService {
 
     @Transactional
     public Membership purchaseMembership(Long userId, Membership.MembershipTier tier) {
-        // Create membership for the user ID from your existing users table
+        // Check if user already has an active membership
+        Membership existingMembership = getActiveMembership(userId);
+
+        if (existingMembership != null) {
+            // Check if trying to purchase same or lower tier
+            if (tier.ordinal() <= existingMembership.getTier().ordinal()) {
+                throw new IllegalStateException(
+                    "You already have an active " + existingMembership.getTier().getDisplayName() +
+                    " membership. You can only upgrade to a higher tier."
+                );
+            }
+
+            // Upgrade: expire the old membership
+            existingMembership.setStatus(Membership.MembershipStatus.EXPIRED);
+            membershipRepository.save(existingMembership);
+        }
+
+        // Create new membership for the user ID from your existing users table
         Membership membership = new Membership();
         membership.setMembershipId("MEM-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         membership.setUserId(userId);  // This references users.id
@@ -32,6 +49,25 @@ public class MembershipService {
         membership.setStatus(Membership.MembershipStatus.ACTIVE);
 
         return membershipRepository.save(membership);
+    }
+
+    /**
+     * Check if user can purchase or upgrade to a specific tier
+     */
+    public String canPurchaseTier(Long userId, Membership.MembershipTier tier) {
+        Membership existingMembership = getActiveMembership(userId);
+
+        if (existingMembership == null) {
+            return null; // Can purchase any tier
+        }
+
+        // Check if trying to purchase same or lower tier
+        if (tier.ordinal() <= existingMembership.getTier().ordinal()) {
+            return "You already have an active " + existingMembership.getTier().getDisplayName() +
+                   " membership. You can only upgrade to a higher tier.";
+        }
+
+        return null; // Can upgrade
     }
 
     public Membership getActiveMembership(Long userId) {

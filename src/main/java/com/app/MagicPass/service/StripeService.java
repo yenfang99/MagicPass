@@ -64,6 +64,59 @@ public class StripeService {
     }
 
     /**
+     * Create a Stripe Checkout Session for ticket purchase
+     */
+    public Session createTicketCheckoutSession(
+            Double grandTotal,
+            com.app.MagicPass.dto.CheckoutRequest req,
+            String successUrl,
+            String cancelUrl) throws StripeException {
+
+        // Convert price to cents (Stripe uses smallest currency unit)
+        long priceInCents = (long) (grandTotal * 100);
+
+        // Build ticket description
+        String description = String.format("Adult: %d, Student: %d, Children: %d - Date: %s",
+                req.getAdultQty(), req.getStudentQty(), req.getChildQty(),
+                req.getReservationDate().toString());
+
+        SessionCreateParams params = SessionCreateParams.builder()
+                .setMode(SessionCreateParams.Mode.PAYMENT)
+                .setSuccessUrl(successUrl)
+                .setCancelUrl(cancelUrl)
+                .addLineItem(
+                        SessionCreateParams.LineItem.builder()
+                                .setQuantity(1L)
+                                .setPriceData(
+                                        SessionCreateParams.LineItem.PriceData.builder()
+                                                .setCurrency("myr")  // Malaysian Ringgit
+                                                .setUnitAmount(priceInCents)
+                                                .setProductData(
+                                                        SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                                                .setName("MagicPass Tickets")
+                                                                .setDescription(description)
+                                                                .build()
+                                                )
+                                                .build()
+                                )
+                                .build()
+                )
+                // Enable multiple payment methods
+                .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
+                .addPaymentMethodType(SessionCreateParams.PaymentMethodType.FPX)
+                .addPaymentMethodType(SessionCreateParams.PaymentMethodType.GRABPAY)
+                // Store metadata
+                .putMetadata("type", "TICKET_PURCHASE")
+                .putMetadata("adultQty", String.valueOf(req.getAdultQty()))
+                .putMetadata("studentQty", String.valueOf(req.getStudentQty()))
+                .putMetadata("childQty", String.valueOf(req.getChildQty()))
+                .putMetadata("reservationDate", req.getReservationDate().toString())
+                .build();
+
+        return Session.create(params);
+    }
+
+    /**
      * Retrieve a checkout session by ID
      */
     public Session retrieveSession(String sessionId) throws StripeException {

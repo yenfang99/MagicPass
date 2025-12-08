@@ -26,9 +26,10 @@ public class TicketController {
     }
 
     @GetMapping("/tickets")
-    public String tickets(Model model) {
+    public String tickets(@RequestParam(value = "userId", defaultValue = "1") Long userId, Model model) {
         CheckoutRequest req = new CheckoutRequest();
         req.setReservationDate(LocalDate.now());
+        req.setUserId(userId);  // Set userId for membership discount lookup
         model.addAttribute("req", req);
         return "tickets";
     }

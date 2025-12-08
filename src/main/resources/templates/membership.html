@@ -156,6 +156,23 @@
     <p>Unlock exclusive benefits and save on every visit!</p>
   </section>
 
+  <!-- Show Current Membership if exists -->
+  <div th:if="${currentMembership != null}" style="margin-bottom: 24px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+      <span style="font-size: 32px;">💎</span>
+      <div>
+        <div style="font-size: 14px; opacity: 0.9;">Your Current Membership</div>
+        <div style="font-size: 24px; font-weight: 700;" th:text="${currentMembership.tier.displayName}">Gold</div>
+      </div>
+    </div>
+    <div style="font-size: 14px; opacity: 0.9;">
+      Valid until: <span th:text="${#temporals.format(currentMembership.expiryDate, 'dd MMM yyyy')}">31 Dec 2025</span>
+    </div>
+    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.3); font-size: 13px; opacity: 0.85;">
+      💡 You can upgrade to a higher tier at any time!
+    </div>
+  </div>
+
   <div th:if="${success}" class="alert" style="background: rgba(34,197,94,.12); border-color: rgba(34,197,94,.35); color: #22c55e; margin-bottom: 20px;">
     <span th:text="${success}"></span>
   </div>
@@ -166,86 +183,47 @@
 
   <div class="membership-grid">
 
-    <!-- Silver Membership -->
-    <div class="membership-card silver-card">
-      <div class="tier-icon">🥈</div>
-      <div class="tier-name">Silver</div>
+    <!-- Dynamic Membership Cards from Database -->
+    <div th:each="type, iterStat : ${membershipTypes}"
+         class="membership-card"
+         th:classappend="${iterStat.index == 1} ? 'featured' : ''">
+
+      <!-- Dynamic Icon based on name -->
+      <div class="tier-icon" th:text="${type.name == 'SILVER' ? '🥈' : (type.name == 'GOLD' ? '🥇' : (type.name == 'PLATINUM' ? '💎' : '✨'))}">✨</div>
+
+      <div class="tier-name" th:text="${type.displayName}">Membership</div>
+
       <div class="tier-price">
-        <span class="currency">RM</span>199
+        <span class="currency">RM</span><span th:text="${#numbers.formatDecimal(type.price, 0, 0)}">99</span>
       </div>
-      <div class="tier-period">per year</div>
+
+      <div class="tier-period" th:text="'per ' + ${type.durationMonths == 12 ? 'year' : type.durationMonths + ' months'}">per year</div>
 
       <div class="tier-benefits">
         <h4>Benefits Include:</h4>
         <ul>
-          <li>5% discount on all tickets</li>
-          <li>Priority booking access</li>
-          <li>Exclusive member newsletter</li>
-          <li>Birthday month special offer</li>
+          <!-- Parse description sentences and display each as separate list item -->
+          <th:block th:if="${type.description != null and !#strings.isEmpty(type.description)}">
+            <li th:each="sentence : ${#strings.arraySplit(type.description, '.')}"
+                th:if="${!#strings.isEmpty(#strings.trim(sentence))}"
+                th:text="${#strings.trim(sentence)}">Description sentence</li>
+          </th:block>
         </ul>
       </div>
 
       <form th:action="@{/membership/purchase}" method="post">
-        <input type="hidden" name="tier" value="SILVER"/>
+        <input type="hidden" name="membershipTypeId" th:value="${type.id}"/>
         <input type="hidden" name="userId" value="1"/><!-- Replace with actual logged-in user ID -->
-        <button type="submit" class="btn btn-primary purchase-btn">Purchase Silver</button>
+        <button type="submit" class="btn btn-primary purchase-btn"
+                th:text="'Purchase ' + ${type.displayName}">Purchase</button>
       </form>
     </div>
 
-    <!-- Gold Membership -->
-    <div class="membership-card gold-card featured">
-      <div class="tier-icon">🥇</div>
-      <div class="tier-name">Gold</div>
-      <div class="tier-price">
-        <span class="currency">RM</span>399
-      </div>
-      <div class="tier-period">per year</div>
-
-      <div class="tier-benefits">
-        <h4>Benefits Include:</h4>
-        <ul>
-          <li>10% discount on all tickets</li>
-          <li>Priority booking access</li>
-          <li>Free parking on weekdays</li>
-          <li>Exclusive member events</li>
-          <li>2 complimentary guest passes</li>
-        </ul>
-      </div>
-
-      <form th:action="@{/membership/purchase}" method="post">
-        <input type="hidden" name="tier" value="GOLD"/>
-        <input type="hidden" name="userId" value="1"/><!-- Replace with actual logged-in user ID -->
-        <button type="submit" class="btn btn-primary purchase-btn">Purchase Gold</button>
-      </form>
-    </div>
-
-    <!-- Platinum Membership -->
-    <div class="membership-card platinum-card">
-      <div class="tier-icon">💎</div>
-      <div class="tier-name">Platinum</div>
-      <div class="tier-price">
-        <span class="currency">RM</span>699
-      </div>
-      <div class="tier-period">per year</div>
-
-      <div class="tier-benefits">
-        <h4>Benefits Include:</h4>
-        <ul>
-          <li>15% discount on all tickets</li>
-          <li>VIP priority access to rides</li>
-          <li>Free parking anytime</li>
-          <li>VIP lounge access</li>
-          <li>Exclusive member events</li>
-          <li>5 complimentary guest passes</li>
-          <li>Dedicated concierge service</li>
-        </ul>
-      </div>
-
-      <form th:action="@{/membership/purchase}" method="post">
-        <input type="hidden" name="tier" value="PLATINUM"/>
-        <input type="hidden" name="userId" value="1"/><!-- Replace with actual logged-in user ID -->
-        <button type="submit" class="btn btn-primary purchase-btn">Purchase Platinum</button>
-      </form>
+    <!-- Show message if no membership types available -->
+    <div th:if="${#lists.isEmpty(membershipTypes)}"
+         style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--muted);">
+      <p style="font-size: 18px; margin: 0;">No membership plans available at the moment.</p>
+      <p style="font-size: 14px; margin-top: 8px;">Please check back later!</p>
     </div>
 
   </div>
