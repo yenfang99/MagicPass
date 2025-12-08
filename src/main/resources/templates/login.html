@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Login</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      MagicPass
+      <small>Login</small>
+    </div>
+    <a class="btn btn-outline" href="/">Home</a>
+  </div>
+</header>
+
+<main class="container">
+  <section class="card">
+    <h2 style="margin-top:0;">Login to MagicPass</h2>
+    <p class="muted" style="margin-top:6px;">Enter your registered email and password.</p>
+
+    <!-- error message -->
+    <div th:if="${error}" class="alert" th:text="${error}"></div>
+
+    <!-- success message (e.g. after register) -->
+    <div th:if="${success}"
+         class="alert"
+         style="border-color:rgba(22,163,74,.35);
+                background:rgba(22,163,74,.12);
+                color:#bbf7d0;"
+         th:text="${success}"></div>
+
+    <form method="post" action="/login" class="grid">
+      <div class="field">
+        <div class="label">Email</div>
+        <input class="input"
+               type="email"
+               name="email"
+               placeholder="you@example.com"
+               required>
+      </div>
+
+      <div class="field">
+        <div class="label">Password</div>
+        <input class="input"
+               type="password"
+               name="password"
+               minlength="8"
+               required>
+        <div class="hint">Use the password you set during registration.</div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">Login</button>
+        <a href="/register" class="btn btn-outline">Create new account</a>
+      </div>
+    </form>
+  </section>
+</main>
+</body>
+</html>

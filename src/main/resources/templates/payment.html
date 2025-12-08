@@ -22,16 +22,17 @@
     <h2 style="margin-top:0;">Payment Preview</h2>
     <p class="muted" style="margin-top:6px;">Review the breakdown before selecting payment method.</p>
 
+    <!-- Option B: no DB order yet, so no Order ID here -->
     <p class="muted" style="margin-top:6px;">
-        Reservation Date:
-        <b th:text="${#temporals.format(req.reservationDate, 'yyyy-MM-dd')}"></b>
+      Reservation Date:
+      <b th:text="${#temporals.format(req.reservationDate, 'yyyy-MM-dd')}"></b>
     </p>
 
     <p class="muted" style="margin-top:10px;">
-        Tickets:
-        Adult <b th:text="${req.adultQty}"></b>,
-        Student <b th:text="${req.studentQty}"></b>,
-        Children <b th:text="${req.childQty}"></b>
+      Tickets:
+      Adult <b th:text="${req.adultQty}"></b>,
+      Student <b th:text="${req.studentQty}"></b>,
+      Children <b th:text="${req.childQty}"></b>
     </p>
 
     <table class="table" style="margin-top:14px;">
@@ -53,13 +54,29 @@
       </tr>
     </table>
 
-    <div class="actions">
-      <a class="btn btn-primary" href="/tickets">Back</a>
-      <a class="btn btn-outline" href="/">Home</a>
-    </div>
+    <!-- Option B: only submit paymentMethod; order will be created in /payment/confirm -->
+    <form th:action="@{/payment/confirm}" method="post" style="margin-top:16px;">
+
+      <div class="field" style="margin-top:14px;">
+        <div class="label">Payment Method</div>
+        <select class="input" name="paymentMethod" required>
+          <option value="" selected disabled>Select a method</option>
+          <option value="CARD">Card</option>
+          <option value="FPX">FPX (Online Banking)</option>
+          <option value="TNG">Touch 'n Go eWallet</option>
+          <option value="CASH">Cash (Counter)</option>
+        </select>
+        <div class="hint">This is a demo payment (no real gateway yet).</div>
+      </div>
+
+      <div class="actions">
+        <a class="btn btn-outline" href="/tickets">Back</a>
+        <button class="btn btn-primary" type="submit">Pay &amp; Generate Receipt</button>
+      </div>
+    </form>
+
   </section>
 </main>
 
 </body>
 </html>
-

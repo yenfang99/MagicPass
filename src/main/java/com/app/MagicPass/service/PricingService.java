@@ -1,28 +1,20 @@
 package com.app.MagicPass.service;
 
 import org.springframework.stereotype.Service;
-
 import com.app.MagicPass.dto.CheckoutRequest;
 import com.app.MagicPass.dto.PricingBreakdown;
+import com.app.MagicPass.strategy.PricingStrategyFactory;
 
 @Service
 public class PricingService {
 
-    private static final double ADULT_PRICE = 370.0;
-    private static final double STUDENT_PRICE = 320.0;
-    private static final double CHILD_PRICE = 250.0;
-    private static final double TAX_RATE = 0.06;
+    private final PricingStrategyFactory factory;
 
-    public PricingBreakdown calculate(CheckoutRequest req, double discountRate) {
-        double total = req.getAdultQty() * ADULT_PRICE
-                + req.getStudentQty() * STUDENT_PRICE
-                + req.getChildQty() * CHILD_PRICE;
+    public PricingService(PricingStrategyFactory factory) {
+        this.factory = factory;
+    }
 
-        double discount = total * discountRate;  // legacy: member discount
-        double subtotal = total - discount;
-        double tax = subtotal * TAX_RATE;
-        double grandTotal = subtotal + tax;
-
-        return new PricingBreakdown(total, discount, tax, grandTotal);
+    public PricingBreakdown calculate(CheckoutRequest req, boolean isMember) {
+        return factory.getStrategy(isMember).calculate(req);
     }
 }

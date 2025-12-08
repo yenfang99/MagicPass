@@ -1,18 +1,18 @@
 package com.app.MagicPass.controller;
 
-
 import java.time.LocalDate;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.app.MagicPass.dto.CheckoutRequest;
 import com.app.MagicPass.dto.PricingBreakdown;
 import com.app.MagicPass.service.DatePolicyService;
 import com.app.MagicPass.service.PricingService;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class TicketController {
@@ -32,31 +32,35 @@ public class TicketController {
         model.addAttribute("req", req);
         return "tickets";
     }
-    
+
     @PostMapping("/tickets/preview")
-    public String preview(@ModelAttribute("req") CheckoutRequest req, Model model) {
+    public String preview(@ModelAttribute("req") CheckoutRequest req,
+                          HttpSession session,
+                          RedirectAttributes ra) {
 
         int totalQty = req.getAdultQty() + req.getStudentQty() + req.getChildQty();
         if (totalQty <= 0) {
-            model.addAttribute("error", "Please select at least 1 ticket.");
-            return "tickets";
+            ra.addFlashAttribute("error", "Please select at least 1 ticket.");
+            return "redirect:/tickets";
         }
 
         if (req.getReservationDate() == null) {
-            model.addAttribute("error", "Please select a reservation date.");
-            return "tickets";
+            ra.addFlashAttribute("error", "Please select a reservation date.");
+            return "redirect:/tickets";
         }
 
         if (!datePolicyService.isWithin7Days(req.getReservationDate())) {
-            model.addAttribute("error", "We only provide reservation within 7 days. Please reselect.");
-            return "tickets";
+            ra.addFlashAttribute("error", "Invalid reservation date. Please choose a date within 7 days from today.");
+            return "redirect:/tickets";
         }
 
-        // For now membership discount rate = 0%
-        PricingBreakdown pricing = pricingService.calculate(req, 0.0);
+        PricingBreakdown pricing = pricingService.calculate(req, false);
 
-        model.addAttribute("pricing", pricing);
-        model.addAttribute("req", req);
-        return "payment";
+        // store in session
+        session.setAttribute("previewReq", req);
+        session.setAttribute("previewPricing", pricing);
+
+        // PRG redirect (so refresh doesn't re-POST)
+        return "redirect:/payment";
     }
 }
