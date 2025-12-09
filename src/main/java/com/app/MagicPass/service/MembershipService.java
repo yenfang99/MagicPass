@@ -1,5 +1,6 @@
 package com.app.MagicPass.service;
 
+import com.app.MagicPass.builder.MembershipBuilder;
 import com.app.MagicPass.model.Membership;
 import com.app.MagicPass.model.MembershipType;
 import com.app.MagicPass.repository.MembershipRepository;
@@ -41,19 +42,20 @@ public class MembershipService {
             membershipRepository.save(existingMembership);
         }
 
-        // Create new membership for the user ID from your existing users table
-        Membership membership = new Membership();
-        membership.setMembershipId("MEM-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        membership.setUserId(userId);  // This references users.id
-        membership.setMembershipType(membershipType);
-        membership.setPrice(membershipType.getPrice());
-        membership.setDiscountRate(membershipType.getDiscountRate());
-        membership.setStartDate(LocalDateTime.now());
-
-        // Use durationMonths from membership type
+        // Create new membership using Builder Pattern
         int durationMonths = membershipType.getDurationMonths();
-        membership.setExpiryDate(LocalDateTime.now().plusMonths(durationMonths));
-        membership.setStatus(Membership.MembershipStatus.ACTIVE);
+        LocalDateTime now = LocalDateTime.now();
+
+        Membership membership = new MembershipBuilder()
+                .membershipId("MEM-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                .userId(userId)
+                .membershipType(membershipType)
+                .price(membershipType.getPrice())
+                .discountRate(membershipType.getDiscountRate())
+                .startDate(now)
+                .expiryDate(now.plusMonths(durationMonths))
+                .status(Membership.MembershipStatus.ACTIVE)
+                .build();
 
         return membershipRepository.save(membership);
     }
