@@ -200,7 +200,7 @@
         <tr>
           <th>ID</th>
           <th>Order Code</th>
-          <th>Customer</th>
+          <th>User</th>
           <th>Date</th>
           <th>Qty</th>
           <th>Total (RM)</th>
@@ -212,7 +212,7 @@
         <tr th:each="ticket : ${tickets}">
           <td th:text="${ticket.id}">1</td>
           <td th:text="${ticket.orderCode}">ORD-001</td>
-          <td th:text="${ticket.customerId}">Customer</td>
+          <td th:text="${ticket.userId}">User</td>
           <td th:text="${ticket.reservationDate}">2024-12-15</td>
           <td>
             <span th:text="'A:' + ${ticket.adultQty} + ' S:' + ${ticket.studentQty} + ' C:' + ${ticket.childQty}">A:2 S:1 C:0</span>

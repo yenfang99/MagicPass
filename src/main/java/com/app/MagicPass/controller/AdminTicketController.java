@@ -62,7 +62,7 @@ public class AdminTicketController {
             return orderRepository.findById(id)
                     .map(existing -> {
                         existing.setOrderCode(ticket.getOrderCode());
-                        existing.setCustomerId(ticket.getCustomerId());
+                        existing.setUserId(ticket.getUserId());
                         existing.setAdultQty(ticket.getAdultQty());
                         existing.setStudentQty(ticket.getStudentQty());
                         existing.setChildQty(ticket.getChildQty());

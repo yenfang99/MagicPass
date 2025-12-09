@@ -125,9 +125,9 @@ a {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary), var(--primary2));
-  border-color: transparent;
-  color: #ffffff;
+  background: #6c96f1;    
+  border: 1px solid var(--border);
+  color: #000000;
 }
 
 .btn-primary:hover {
@@ -219,9 +219,10 @@ input.is-invalid {
 .alert {
   border-radius: 14px;
   padding: 12px 14px;
-  border: 1px solid rgba(239, 68, 68, .35);
-  background: rgba(239, 68, 68, .12);
-  color: #fecaca;
+  border: 1px solid #fca5a5;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-weight: 700;
   margin-bottom: 14px;
 }
 

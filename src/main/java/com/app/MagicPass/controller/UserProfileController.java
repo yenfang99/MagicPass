@@ -3,6 +3,7 @@ package com.app.MagicPass.controller;
 import com.app.MagicPass.model.Membership;
 import com.app.MagicPass.model.User;
 import com.app.MagicPass.service.MembershipService;
+import com.app.MagicPass.service.OrderService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,9 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class UserProfileController {
 
     private final MembershipService membershipService;
+    private final OrderService orderService;
 
-    public UserProfileController(MembershipService membershipService) {
+    public UserProfileController(MembershipService membershipService,
+                                 OrderService orderService) {
         this.membershipService = membershipService;
+        this.orderService = orderService;
     }
 
     @GetMapping("/profile")
@@ -33,6 +37,19 @@ public class UserProfileController {
 
         model.addAttribute("user", currentUser);
         model.addAttribute("currentMembership", currentMembership);
-        return "profile";   // 👈 match templates/profile.html
+        return "profile";   // match templates/profile.html
+    }
+
+    @GetMapping("/orders")
+    public String orderHistory(HttpSession session, Model model) {
+        User currentUser = (User) session.getAttribute("currentUser");
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        model.addAttribute("orders", orderService.getOrdersForUser(currentUser.getId()));
+        model.addAttribute("user", currentUser);
+        return "order-history";
     }
 }
+

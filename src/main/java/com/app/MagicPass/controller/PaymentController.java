@@ -225,9 +225,12 @@ public class PaymentController {
   }
 
   @GetMapping("/receipt/{orderId}")
-  public String receipt(@PathVariable Long orderId, Model model) {
+  public String receipt(@PathVariable Long orderId,
+                        @RequestParam(value = "from", required = false) String from,
+                        Model model) {
     var order = orderService.getById(orderId);
     model.addAttribute("order", order);
+    model.addAttribute("showBackToHistory", "history".equalsIgnoreCase(from));
     return "receipt";
   }
 }

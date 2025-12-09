@@ -16,6 +16,10 @@ public class OrderService {
     this.orderRepository = orderRepository;
   }
 
+  public java.util.List<Order> getOrdersForUser(Long userId) {
+    return orderRepository.findByUserIdOrderByCreatedAtDesc(userId);
+  }
+
   public Order createPaidOrder(CheckoutRequest req, PricingBreakdown pricing, String paymentMethod) {
     Order order = new Order();
     order.setUserId(req.getUserId());

@@ -12,10 +12,13 @@
 
 <main class="container">
   <section class="card">
-    <h2 style="margin-top:0;">My Account</h2>
-    <p class="muted" style="margin-top:6px;">
-      Here are your account details.
-    </p>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+      <div>
+        <h2 style="margin:0;">My Account</h2>
+        <p class="muted" style="margin:4px 0 0 0;">Here are your account details.</p>
+      </div>
+      <a class="btn btn-primary" href="/user/orders">Order History</a>
+    </div>
 
     <!-- Show Current Membership if exists -->
     <div th:if="${currentMembership != null}" style="margin-top: 24px; margin-bottom: 24px; padding: 20px; background: linear-gradient(135deg, #697cd4 0%, #a371d4 100%); border-radius: 12px; color: white;">
@@ -74,10 +77,6 @@
       </tr>
     </table>
 
-    <div class="actions" style="margin-top:16px;">
-      <a class="btn btn-outline" href="/">Back to Home</a>
-      <a class="btn btn-primary" href="/tickets">Buy Tickets</a>
-    </div>
   </section>
 </main>
 

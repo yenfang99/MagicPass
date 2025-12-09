@@ -12,4 +12,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * @return List of orders with the specified status
      */
     List<Order> findByStatus(String status);
+
+    /**
+     * Find all orders for a user, newest first.
+     */
+    List<Order> findByUserIdOrderByCreatedAtDesc(Long userId);
 }

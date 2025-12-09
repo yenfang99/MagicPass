@@ -76,7 +76,8 @@
 
 
     <div class="actions" style="margin-top:16px;">
-      <a class="btn btn-outline" href="/tickets">Buy Another Ticket</a>
+      <a th:if="${showBackToHistory}" class="btn btn-outline" href="/user/orders">Back to Order History</a>
+      <a th:if="${!showBackToHistory}" class="btn btn-outline" href="/tickets">Buy Another Ticket</a>
       <button class="btn btn-primary" onclick="window.print()">Print</button>
     </div>
   </section>
