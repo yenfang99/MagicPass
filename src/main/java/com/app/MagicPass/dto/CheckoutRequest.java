@@ -11,9 +11,7 @@ public class CheckoutRequest {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) // expects yyyy-MM-dd from <input type="date">
     private LocalDate reservationDate;
 
-    private String customerId = "C0003";
-
-    // User ID for membership discount lookup
+    // User ID for membership discount lookup and order ownership
     private Long userId;
 
     public int getAdultQty() { return adultQty; }
@@ -25,9 +23,6 @@ public class CheckoutRequest {
 
     public LocalDate getReservationDate() { return reservationDate; }
     public void setReservationDate(LocalDate reservationDate) { this.reservationDate = reservationDate; }
-
-    public String getCustomerId() { return customerId; }
-    public void setCustomerId(String customerId) { this.customerId = customerId; }
 
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }

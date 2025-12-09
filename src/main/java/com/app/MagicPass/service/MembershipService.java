@@ -15,25 +15,31 @@ import java.util.UUID;
 public class MembershipService {
 
     private final MembershipRepository membershipRepository;
+    private final MembershipTypeService membershipTypeService;
 
-    public MembershipService(MembershipRepository membershipRepository) {
+    public MembershipService(MembershipRepository membershipRepository,
+                             MembershipTypeService membershipTypeService) {
         this.membershipRepository = membershipRepository;
+        this.membershipTypeService = membershipTypeService;
     }
 
     @Transactional
     public Membership purchaseMembership(Long userId, MembershipType membershipType) {
+        if (membershipType == null || !Boolean.TRUE.equals(membershipType.getActive())) {
+            throw new IllegalArgumentException("Membership type is inactive or missing");
+        }
+
         // Check if user already has an active membership
         Membership existingMembership = getActiveMembership(userId);
-
         if (existingMembership != null) {
-            // Check if trying to purchase same or lower tier level
             int currentTierLevel = existingMembership.getMembershipType().getTierLevel();
             int newTierLevel = membershipType.getTierLevel();
 
+            // Prevent buying same or lower tier
             if (newTierLevel <= currentTierLevel) {
                 throw new IllegalStateException(
-                    "You already have an active " + existingMembership.getMembershipType().getDisplayName() +
-                    " membership. You can only upgrade to a higher tier."
+                        "You already have an active " + existingMembership.getMembershipType().getDisplayName() +
+                        " membership. You can only upgrade to a higher tier."
                 );
             }
 
@@ -43,9 +49,7 @@ public class MembershipService {
         }
 
         // Create new membership using Builder Pattern
-        int durationMonths = membershipType.getDurationMonths();
         LocalDateTime now = LocalDateTime.now();
-
         Membership membership = new MembershipBuilder()
                 .membershipId("MEM-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .userId(userId)
@@ -53,7 +57,7 @@ public class MembershipService {
                 .price(membershipType.getPrice())
                 .discountRate(membershipType.getDiscountRate())
                 .startDate(now)
-                .expiryDate(now.plusMonths(durationMonths))
+                .expiryDate(now.plusMonths(membershipType.getDurationMonths()))
                 .status(Membership.MembershipStatus.ACTIVE)
                 .build();
 
@@ -70,7 +74,6 @@ public class MembershipService {
             return null; // Can purchase any tier
         }
 
-        // Check if trying to purchase same or lower tier level
         int currentTierLevel = existingMembership.getMembershipType().getTierLevel();
         int newTierLevel = membershipType.getTierLevel();
 
@@ -86,6 +89,25 @@ public class MembershipService {
         return membershipRepository.findFirstByUserIdAndStatusOrderByExpiryDateDesc(
                 userId, Membership.MembershipStatus.ACTIVE)
                 .orElse(null);
+    }
+
+    /**
+     * Returns an active membership only if its membership type is still active.
+     */
+    public Membership getActiveMembershipWithActiveType(Long userId) {
+        Membership membership = getActiveMembership(userId);
+        if (membership == null) {
+            return null;
+        }
+
+        MembershipType type = membership.getMembershipType();
+        if (type != null) {
+            MembershipType freshType = membershipTypeService.getMembershipTypeById(type.getId());
+            if (Boolean.TRUE.equals(freshType.getActive())) {
+                return membership;
+            }
+        }
+        return null;
     }
 
     public List<Membership> getUserMemberships(Long userId) {

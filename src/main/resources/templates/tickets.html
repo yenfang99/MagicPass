@@ -18,21 +18,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const pad = (n) => String(n).padStart(2, "0");
   const toISO = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const isSameDay = (a, b) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
 
   const today = new Date();
-  const max = new Date();
-  max.setDate(today.getDate() + 7);
+  const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const min = new Date(today);
+  min.setDate(min.getDate() + 1); // earliest allowed is tomorrow
+  const max = new Date(today);
+  max.setDate(today.getDate() + 7); // latest allowed is 7 days ahead
 
-  // set default (today)
-  isoHidden.value = toISO(today);
+  // prefer server-provided ISO value if present
+  const existingIso = isoHidden.value;
+  let initialDate = existingIso ? new Date(existingIso) : min;
+  if (initialDate < min) initialDate = min;
+  if (initialDate > max) initialDate = max;
+  isoHidden.value = toISO(initialDate);
 
   flatpickr(display, {
     dateFormat: "d/m/Y",     // UI display: dd/MM/yyyy
-    defaultDate: today,
-    minDate: today,
+    defaultDate: initialDate,
+    minDate: min,
     maxDate: max,
     allowInput: false,       // prevent manual typing
     disableMobile: true,     // consistent UI picker (optional)
+    onDayCreate: function(_dObj, _dStr, fp, dayElem) {
+      const date = dayElem.dateObj;
+      if (isSameDay(date, startOfToday)) {
+        dayElem.classList.add("fp-today-indicator");
+      }
+    },
     onChange: function(selectedDates) {
       if (selectedDates && selectedDates.length > 0) {
         isoHidden.value = toISO(selectedDates[0]); // submit ISO
@@ -54,9 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
     <div th:if="${error}" class="alert" th:text="${error}"></div>
 
     <form th:action="@{/tickets/preview}" th:object="${req}" method="post">
-      <!-- Hidden userId field for membership discount lookup -->
-      <input type="hidden" th:field="*{userId}" value="1"/>
-
       <div class="grid grid-3">
         <div class="field">
           <div class="label">Adult (RM370)</div>
@@ -80,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <input class="input" type="text" id="reservationDateDisplay" placeholder="Select date" />
         <!-- hidden value that gets submitted to Spring (ISO) -->
         <input type="hidden" th:field="*{reservationDate}" id="reservationDateIso"/>
-        <div class="hint">Reservation is allowed within 7 days only.</div>
+        <div class="hint">Reservation is allowed from tomorrow and within the next 7 days only.</div>
       </div>
 
 

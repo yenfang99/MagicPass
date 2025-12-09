@@ -8,7 +8,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.app.MagicPass.dto.CheckoutRequest;
 import com.app.MagicPass.dto.PricingBreakdown;
+import com.app.MagicPass.model.Membership;
+import com.app.MagicPass.model.MembershipType;
+import com.app.MagicPass.model.User;
 import com.app.MagicPass.service.DatePolicyService;
+import com.app.MagicPass.service.MembershipService;
+import com.app.MagicPass.service.MembershipTypeService;
 import com.app.MagicPass.service.OrderService;
 import com.app.MagicPass.service.PricingService;
 import com.app.MagicPass.service.StripeService;
@@ -23,15 +28,21 @@ public class PaymentController {
   private final PricingService pricingService;
   private final DatePolicyService datePolicyService;
   private final StripeService stripeService;
+  private final MembershipService membershipService;
+  private final MembershipTypeService membershipTypeService;
 
   public PaymentController(OrderService orderService,
                            PricingService pricingService,
                            DatePolicyService datePolicyService,
-                           StripeService stripeService) {
+                           StripeService stripeService,
+                           MembershipService membershipService,
+                           MembershipTypeService membershipTypeService) {
     this.orderService = orderService;
     this.pricingService = pricingService;
     this.datePolicyService = datePolicyService;
     this.stripeService = stripeService;
+    this.membershipService = membershipService;
+    this.membershipTypeService = membershipTypeService;
   }
 
   @GetMapping("/payment")
@@ -44,8 +55,54 @@ public class PaymentController {
       return "redirect:/tickets";
     }
 
+    User currentUser = (User) session.getAttribute("currentUser");
+    if (currentUser == null) {
+      ra.addFlashAttribute("error", "Please log in to continue with payment.");
+      return "redirect:/login";
+    }
+
+    // Force user id from session (don't trust client payload)
+    req.setUserId(currentUser.getId());
+
+    // Build membership hint/CTA
+    Membership activeMembership = membershipService.getActiveMembershipWithActiveType(currentUser.getId());
+    MembershipType currentType = activeMembership != null ? activeMembership.getMembershipType() : null;
+    int currentTierLevel = currentType != null && currentType.getTierLevel() != null ? currentType.getTierLevel() : 0;
+    String currentMembershipName = currentType != null ? currentType.getDisplayName() : null;
+    Double currentMembershipDiscountRate = currentType != null ? currentType.getDiscountRate() : null;
+
+    var activeTypes = membershipTypeService.getActiveMembershipTypes();
+    MembershipType topMembershipType = activeTypes.stream()
+      .filter(t -> t.getTierLevel() != null)
+      .max(java.util.Comparator.comparingInt(MembershipType::getTierLevel))
+      .orElse(null);
+
+    int highestTierLevel = topMembershipType != null && topMembershipType.getTierLevel() != null
+      ? topMembershipType.getTierLevel()
+      : 0;
+    String highestTierName = topMembershipType != null
+      ? topMembershipType.getDisplayName()
+      : "top tier";
+    Double topMembershipDiscountRate = topMembershipType != null ? topMembershipType.getDiscountRate() : null;
+
+    boolean canUpgrade = currentTierLevel < highestTierLevel;
+    String membershipHint;
+    if (currentType == null) {
+      membershipHint = "Want lower prices? Buy a membership to unlock ticket discounts before checkout.";
+    } else if (canUpgrade) {
+      membershipHint = "You're on " + currentType.getDisplayName() + ". Upgrade to a higher tier for bigger discounts.";
+    } else {
+      membershipHint = "You're on our top membership (" + currentType.getDisplayName() + ") and already getting the maximum discount.";
+    }
+
     model.addAttribute("req", req);
     model.addAttribute("pricing", pricing);
+    model.addAttribute("membershipHint", membershipHint);
+    model.addAttribute("canUpgradeMembership", canUpgrade);
+    model.addAttribute("topMembershipName", highestTierName);
+    model.addAttribute("topMembershipDiscountRate", topMembershipDiscountRate);
+    model.addAttribute("currentMembershipName", currentMembershipName);
+    model.addAttribute("currentMembershipDiscountRate", currentMembershipDiscountRate);
     return "payment";
   }
 
@@ -62,6 +119,12 @@ public class PaymentController {
       return "redirect:/tickets";
     }
 
+    User currentUser = (User) session.getAttribute("currentUser");
+    if (currentUser == null) {
+      ra.addFlashAttribute("error", "Please log in to confirm your payment.");
+      return "redirect:/login";
+    }
+
     // Validate again (server-side safety)
     int totalQty = req.getAdultQty() + req.getStudentQty() + req.getChildQty();
     if (totalQty <= 0 || req.getReservationDate() == null || !datePolicyService.isWithin7Days(req.getReservationDate())) {
@@ -71,8 +134,12 @@ public class PaymentController {
       return "redirect:/tickets";
     }
 
+    // Enforce purchaser identity from session
+    req.setUserId(currentUser.getId());
+
+    boolean isMember = membershipService.getActiveMembershipWithActiveType(currentUser.getId()) != null;
     // Recalculate pricing (don't trust session for money)
-    pricing = pricingService.calculate(req, false);
+    pricing = pricingService.calculate(req, isMember);
 
     try {
       // Create Stripe checkout session
