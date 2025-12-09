@@ -235,7 +235,7 @@
           <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
           <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
         </svg>
-        Users
+        Customers
       </a>
       <a href="/staff/manage" class="menu-item">
         <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -261,8 +261,14 @@
   </nav>
 
   <div class="sidebar-footer">
-    <a href="/" class="btn btn-outline" style="width: 100%; justify-content: center;">
-      Back to Site
+    <div style="padding: 0 0 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px;">
+      <div style="font-size: 11px; color: var(--muted); font-weight: 600; margin-bottom: 4px;">Logged in as:</div>
+      <div style="font-size: 13px; font-weight: 600; color: var(--text);" th:text="${session.currentStaff?.email}">staff@magicpass.my</div>
+      <div th:if="${session.isBoss}" style="display: inline-block; margin-top: 4px; padding: 2px 8px; background: #eef2ff; color: #1d4ed8; border-radius: 999px; font-size: 10px; font-weight: 700;">BOSS</div>
+      <div th:unless="${session.isBoss}" style="display: inline-block; margin-top: 4px; padding: 2px 8px; background: #fee2e2; color: #b91c1c; border-radius: 999px; font-size: 10px; font-weight: 700;">STAFF</div>
+    </div>
+    <a href="/logout" class="btn btn-outline" style="width: 100%; justify-content: center; background: rgba(239,68,68,0.1); color: #dc2626;">
+      Logout
     </a>
   </div>
 </aside>

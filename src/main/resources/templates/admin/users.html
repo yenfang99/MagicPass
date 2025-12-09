@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
-  <title th:text="${mode == 'create' ? 'Create' : 'Edit'} + ' Membership Type'">Membership Type Form</title>
+  <title>Manage Users - Admin</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <style>
     body {
@@ -104,6 +104,89 @@
       margin-left: 260px;
       padding: 32px;
     }
+
+    /* Table Styles */
+    .user-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: var(--surface);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .user-table thead {
+      background: var(--background);
+    }
+
+    .user-table th {
+      text-align: left;
+      padding: 16px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .user-table td {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    .user-table tr:hover {
+      background: var(--background);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-member {
+      background: rgba(34,197,94,0.12);
+      color: #16a34a;
+    }
+
+    .badge-regular {
+      background: rgba(148,163,184,0.12);
+      color: #64748b;
+    }
+
+    .badge-silver {
+      background: rgba(148,163,184,0.12);
+      color: #64748b;
+    }
+
+    .badge-gold {
+      background: rgba(234,179,8,0.12);
+      color: #ca8a04;
+    }
+
+    .badge-platinum {
+      background: rgba(139,92,246,0.12);
+      color: #7c3aed;
+    }
+
+    .user-email {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .user-id {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .user-date {
+      color: var(--muted);
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
@@ -131,7 +214,7 @@
 
     <div class="menu-section">
       <h3 class="menu-section-title">Management</h3>
-      <a href="/admin/membership-types" class="menu-item active">
+      <a href="/admin/membership-types" class="menu-item">
         <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
           <circle cx="12" cy="7" r="4"></circle>
@@ -148,7 +231,7 @@
         </svg>
         Tickets
       </a>
-      <a href="/admin/users" class="menu-item">
+      <a href="/admin/users" class="menu-item active">
         <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
           <circle cx="9" cy="7" r="4"></circle>
@@ -196,78 +279,72 @@
 <!-- Main Content -->
 <main class="main-content">
   <section class="card">
-    <h2 style="margin-top:0;" th:text="${mode == 'create' ? 'Create New' : 'Edit'} + ' Membership Type'">Form</h2>
+    <div style="margin-bottom: 24px;">
+      <h2 style="margin: 0 0 8px;">Customer Management</h2>
+      <p class="muted" style="margin: 0;">View all registered users in the system</p>
+    </div>
 
-    <div th:if="${error}" class="alert" th:text="${error}"></div>
-
-    <form th:action="${mode == 'create' ? '/admin/membership-types/create' : '/admin/membership-types/edit/' + membershipType.id}"
-          th:object="${membershipType}"
-          method="post">
-
-      <div class="field">
-        <label class="label" for="name">Name *</label>
-        <input class="input" type="text" id="name" th:field="*{name}"
-               placeholder="e.g., SILVER" required/>
-        <div class="hint">Internal name (uppercase, no spaces). Used as unique identifier.</div>
+    <!-- User Statistics -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+      <div style="padding: 16px; background: var(--background); border-radius: 12px; border: 2px solid var(--border);">
+        <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 8px;">Total Users</div>
+        <div style="font-size: 28px; font-weight: 800; color: var(--text);" th:text="${totalUsers}">0</div>
       </div>
-
-      <div class="field">
-        <label class="label" for="displayName">Display Name *</label>
-        <input class="input" type="text" id="displayName" th:field="*{displayName}"
-               placeholder="e.g., Silver Membership" required/>
-        <div class="hint">Name shown to customers.</div>
+      <div style="padding: 16px; background: var(--background); border-radius: 12px; border: 2px solid var(--border);">
+        <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 8px;">Active Members</div>
+        <div style="font-size: 28px; font-weight: 800; color: var(--text);" th:text="${totalMembers}">0</div>
       </div>
+    </div>
 
-      <div class="field">
-        <label class="label" for="description">Description</label>
-        <textarea class="input" id="description" th:field="*{description}" rows="3"
-                  placeholder="Describe the benefits of this membership tier..."></textarea>
-      </div>
+    <!-- Users Table -->
+    <table class="user-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Membership Type</th>
+          <th>Joined Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="user : ${userList}">
+          <td>
+            <span class="user-id" th:text="'#' + ${user.id}">1</span>
+          </td>
+          <td>
+            <span class="user-email" th:text="${user.email}">user@example.com</span>
+          </td>
+          <td>
+            <span th:if="${userMembershipMap.containsKey(user.id)}" class="badge badge-member">Member</span>
+            <span th:unless="${userMembershipMap.containsKey(user.id)}" class="badge badge-regular">Regular</span>
+          </td>
+          <td>
+            <th:block th:if="${userMembershipMap.containsKey(user.id)}">
+              <th:block th:with="membership=${userMembershipMap.get(user.id)}">
+                <span th:if="${membership.tier.name() == 'SILVER'}" class="badge badge-silver" th:text="${membership.tier.displayName}">Silver</span>
+                <span th:if="${membership.tier.name() == 'GOLD'}" class="badge badge-gold" th:text="${membership.tier.displayName}">Gold</span>
+                <span th:if="${membership.tier.name() == 'PLATINUM'}" class="badge badge-platinum" th:text="${membership.tier.displayName}">Platinum</span>
+              </th:block>
+            </th:block>
+            <th:block th:unless="${userMembershipMap.containsKey(user.id)}">
+              <span class="user-date">-</span>
+            </th:block>
+          </td>
+          <td>
+            <span class="user-date" th:text="${#temporals.format(user.createdAt, 'MMM dd, yyyy HH:mm')}">Jan 01, 2024 12:00</span>
+          </td>
+        </tr>
 
-      <div class="grid grid-3">
-        <div class="field">
-          <label class="label" for="price">Price (MYR) *</label>
-          <input class="input" type="number" id="price" th:field="*{price}"
-                 step="0.01" min="0" placeholder="99.00" required/>
-        </div>
+        <!-- Empty state -->
+        <tr th:if="${#lists.isEmpty(userList)}">
+          <td colspan="5" style="text-align: center; padding: 40px; color: var(--muted);">
+            No users found in the system.
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-        <div class="field">
-          <label class="label" for="discountRate">Discount Rate *</label>
-          <input class="input" type="number" id="discountRate" th:field="*{discountRate}"
-                 step="0.01" min="0" max="1" placeholder="0.05" required/>
-          <div class="hint">Enter as decimal (0.05 = 5%)</div>
-        </div>
-
-        <div class="field">
-          <label class="label" for="durationMonths">Duration (Months) *</label>
-          <input class="input" type="number" id="durationMonths" th:field="*{durationMonths}"
-                 min="1" placeholder="12" required/>
-        </div>
-      </div>
-
-      <div class="grid grid-3">
-        <div class="field">
-          <label class="label" for="displayOrder">Display Order *</label>
-          <input class="input" type="number" id="displayOrder" th:field="*{displayOrder}"
-                 min="0" placeholder="0" required/>
-          <div class="hint">Lower numbers appear first.</div>
-        </div>
-
-        <div class="field">
-          <label class="label" for="active">Status *</label>
-          <select class="input" id="active" th:field="*{active}" required>
-            <option th:value="true">Active</option>
-            <option th:value="false">Inactive</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="actions">
-        <a class="btn btn-outline" th:href="@{/admin/membership-types}">Cancel</a>
-        <button class="btn btn-primary" type="submit"
-                th:text="${mode == 'create' ? 'Create' : 'Update'} + ' Membership Type'">Submit</button>
-      </div>
-    </form>
   </section>
 </main>
 
