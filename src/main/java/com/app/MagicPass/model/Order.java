@@ -16,7 +16,8 @@ public class Order {
   @Column(name = "order_code")
   private String orderCode;
 
-  private String customerId;
+  @Column(name = "user_id")
+  private Long userId;
 
   private int adultQty;
   private int studentQty;
@@ -46,8 +47,8 @@ public class Order {
   public String getOrderCode() { return orderCode; }
   public void setOrderCode(String orderCode) { this.orderCode = orderCode; }
 
-  public String getCustomerId() { return customerId; }
-  public void setCustomerId(String customerId) { this.customerId = customerId; }
+  public Long getUserId() { return userId; }
+  public void setUserId(Long userId) { this.userId = userId; }
 
   public int getAdultQty() { return adultQty; }
   public void setAdultQty(int adultQty) { this.adultQty = adultQty; }

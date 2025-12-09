@@ -5,6 +5,7 @@ public class PricingBreakdown {
   private double discount;
   private double tax;
   private double grandTotal;
+  private double discountRate; // 0.05 = 5% for display purposes
 
   public double getTotal() { return total; }
   public void setTotal(double total) { this.total = total; }
@@ -17,4 +18,7 @@ public class PricingBreakdown {
 
   public double getGrandTotal() { return grandTotal; }
   public void setGrandTotal(double grandTotal) { this.grandTotal = grandTotal; }
+
+  public double getDiscountRate() { return discountRate; }
+  public void setDiscountRate(double discountRate) { this.discountRate = discountRate; }
 }

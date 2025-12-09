@@ -45,12 +45,7 @@
         <td class="right" th:text="${pricing.total}"></td>
       </tr>
       <tr>
-        <td class="muted">
-          Discount
-          <span th:if="${pricing.discountRate > 0}" class="muted" style="font-size: 12px; margin-left: 6px;">
-            (<span th:text="${#numbers.formatDecimal(pricing.discountRate * 100, 0, 2)}"></span>%)
-          </span>
-        </td>
+        <td class="muted">Discount</td>
         <td class="right" th:text="${pricing.discount}"></td>
       </tr>
       <tr>
@@ -63,24 +58,21 @@
       </tr>
     </table>
 
-    <!-- Option B: only submit paymentMethod; order will be created in /payment/confirm -->
+    <!-- Stripe Payment Integration -->
     <form th:action="@{/payment/confirm}" method="post" style="margin-top:16px;">
+      <input type="hidden" name="paymentMethod" value="STRIPE"/>
 
-      <div class="field" style="margin-top:14px;">
-        <div class="label">Payment Method</div>
-        <select class="input" name="paymentMethod" required>
-          <option value="" selected disabled>Select a method</option>
-          <option value="CARD">Card</option>
-          <option value="FPX">FPX (Online Banking)</option>
-          <option value="TNG">Touch 'n Go eWallet</option>
-          <option value="CASH">Cash (Counter)</option>
-        </select>
-        <div class="hint">This is a demo payment (no real gateway yet).</div>
+      <div style="margin-top:14px; padding: 16px; background: rgba(37,99,235,.08); border-radius: 12px; border: 1px solid rgba(37,99,235,.2);">
+        <div style="font-weight: 600; margin-bottom: 8px;">💳 Secure Payment with Stripe</div>
+        <div style="font-size: 14px; color: var(--muted);">
+          You will be redirected to Stripe's secure checkout page.<br/>
+          We accept: Credit/Debit Cards, FPX (Online Banking), and GrabPay.
+        </div>
       </div>
 
       <div class="actions">
         <a class="btn btn-outline" href="/tickets">Back</a>
-        <button class="btn btn-primary" type="submit">Pay &amp; Generate Receipt</button>
+        <button class="btn btn-primary" type="submit">Proceed to Payment</button>
       </div>
     </form>
 

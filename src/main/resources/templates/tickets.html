@@ -20,12 +20,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const max = new Date();
   max.setDate(today.getDate() + 7);
 
-  // set default (today)
-  isoHidden.value = toISO(today);
+  // prefer server-provided ISO value if present
+  const existingIso = isoHidden.value;
+  const initialDate = existingIso ? new Date(existingIso) : today;
+  isoHidden.value = toISO(initialDate);
 
   flatpickr(display, {
     dateFormat: "d/m/Y",     // UI display: dd/MM/yyyy
-    defaultDate: today,
+    defaultDate: initialDate,
     minDate: today,
     maxDate: max,
     allowInput: false,       // prevent manual typing
@@ -58,7 +60,10 @@ document.addEventListener("DOMContentLoaded", () => {
     <div th:if="${error}" class="alert" th:text="${error}"></div>
 
     <form th:action="@{/tickets/preview}" th:object="${req}" method="post">
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
       <div class="grid grid-3">
         <div class="field">
           <div class="label">Adult (RM370)</div>

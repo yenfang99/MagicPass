@@ -16,10 +16,9 @@ public class OrderService {
     this.orderRepository = orderRepository;
   }
 
-  // NEW: save only after payment
   public Order createPaidOrder(CheckoutRequest req, PricingBreakdown pricing, String paymentMethod) {
     Order order = new Order();
-    order.setCustomerId(req.getCustomerId());
+    order.setUserId(req.getUserId());
     order.setAdultQty(req.getAdultQty());
     order.setStudentQty(req.getStudentQty());
     order.setChildQty(req.getChildQty());
