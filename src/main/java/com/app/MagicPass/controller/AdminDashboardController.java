@@ -1,14 +1,8 @@
 package com.app.MagicPass.controller;
 
-
-import com.app.MagicPass.service.MembershipService;
-import com.app.MagicPass.service.MembershipTypeService;
-
 import com.app.MagicPass.model.Staff;
-import com.app.MagicPass.service.MembershipService;
-import com.app.MagicPass.service.MembershipTypeService;
+import com.app.MagicPass.service.DashboardService;
 import jakarta.servlet.http.HttpSession;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,17 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/admin")
 public class AdminDashboardController {
 
-    private final MembershipTypeService membershipTypeService;
-    private final MembershipService membershipService;
+    private final DashboardService dashboardService;
 
-    public AdminDashboardController(MembershipTypeService membershipTypeService,
-                                   MembershipService membershipService) {
-        this.membershipTypeService = membershipTypeService;
-        this.membershipService = membershipService;
+    public AdminDashboardController(DashboardService dashboardService) {
+        this.dashboardService = dashboardService;
     }
 
     @GetMapping("/dashboard")
-
     public String dashboard(HttpSession session, Model model) {
         // Check if staff is logged in
         Staff currentStaff = (Staff) session.getAttribute("currentStaff");
@@ -38,21 +28,17 @@ public class AdminDashboardController {
             return "redirect:/login";  // Redirect to login if not staff
         }
 
-        // Get statistics for dashboard
-        long membershipTypeCount = membershipTypeService.getActiveMembershipTypes().size();
+        // Get statistics for dashboard using DashboardService
+        long totalMembers = dashboardService.getTotalActiveMembers();
+        long totalTickets = dashboardService.getTotalTicketsSold();
+        double totalRevenue = dashboardService.getTotalRevenue();
+        long membershipTypeCount = dashboardService.getActiveMembershipTypeCount();
 
-        // TODO: Implement these methods in their respective services
-        // long totalMembers = membershipService.getTotalActiveMembers();
-        // long totalTickets = ticketService.getTotalTicketsSoldThisMonth();
-        // double totalRevenue = paymentService.getTotalRevenue();
-
+        model.addAttribute("totalMembers", totalMembers);
+        model.addAttribute("totalTickets", totalTickets);
+        model.addAttribute("totalRevenue", totalRevenue);
         model.addAttribute("membershipTypeCount", membershipTypeCount);
-        model.addAttribute("totalMembers", 0); // Placeholder
-        model.addAttribute("totalTickets", 0); // Placeholder
-        model.addAttribute("totalRevenue", 0.0); // Placeholder
-
         model.addAttribute("currentStaff", currentStaff);
-
 
         return "admin/dashboard";
     }
