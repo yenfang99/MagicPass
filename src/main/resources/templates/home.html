@@ -2,36 +2,194 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8" />
-  <title>MagicPass</title>
+  <title>MagicPass - Your Gateway to Magical Adventures</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
+
+  <!-- Include Header Styles -->
+  <th:block th:replace="~{fragments/header :: header-styles}"></th:block>
+
+  <style>
+    .hero-banner {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-align: center;
+      padding: 60px 28px;
+      border-radius: 18px;
+      margin-bottom: 32px;
+      box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+    }
+    .hero-banner h1 {
+      font-size: 48px;
+      margin: 0 0 12px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    .hero-banner .tagline {
+      font-size: 20px;
+      margin: 0 0 28px;
+      opacity: 0.95;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 30px rgba(15,23,42,.15);
+    }
+    .feature-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .feature-card h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      color: var(--text);
+    }
+    .feature-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+    .pricing-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 32px;
+      margin-bottom: 32px;
+    }
+    .pricing-section h2 {
+      text-align: center;
+      margin: 0 0 28px;
+      font-size: 32px;
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    .price-card {
+      background: var(--primary-soft);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      text-align: center;
+    }
+    .price-card .ticket-type {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--primary);
+    }
+    .price-card .price {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .price-card .price-note {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .cta-section {
+      text-align: center;
+      padding: 40px 28px;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      border-radius: 18px;
+      color: white;
+    }
+    .cta-section h2 {
+      margin: 0 0 16px;
+      font-size: 32px;
+    }
+    .cta-section p {
+      margin: 0 0 24px;
+      font-size: 16px;
+      opacity: 0.95;
+    }
+    .btn-large {
+      padding: 16px 32px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+  </style>
 </head>
 <body>
 
-<header class="nav">
-  <div class="nav-inner">
-    <div class="brand">
-      MagicPass
-      <small>Theme Park Ticketing system</small>
-    </div>
-    <div style="display:flex; gap:8px;">
-      <a class="btn btn-outline" href="/tickets">Purchase Ticket</a>
-      <a class="btn btn-outline" href="/login">Login</a>
-      <a class="btn btn-primary" href="/register">Register</a>
-    </div>
-  </div>
-</header>
+<!-- Include Header Fragment -->
+<div th:replace="~{fragments/header :: header}"></div>
 
 <main class="container">
-  <section class="card hero">
-    <h1>MagicPass - Theme Park Ticketing System</h1>
-    <p>
-      Purchase tickets with reservation date validation (within 7 days),
-      pricing breakdown (tax, discount), and checkout flow.
-    </p>
-    <div class="actions">
-      <a class="btn btn-primary" href="/tickets">Start Purchase</a>
+
+  <!-- Hero Banner -->
+  <section class="hero-banner">
+    <h1>Welcome to MagicPass</h1>
+    <p class="tagline">Your Gateway to Unforgettable Adventures</p>
+    <a class="btn btn-primary btn-large" href="/tickets">Buy Tickets Now</a>
+  </section>
+
+  <!-- Features Section -->
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🎢</div>
+      <h3>Thrilling Rides</h3>
+      <p>Experience world-class attractions and heart-pounding adventures for all ages</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">🎭</div>
+      <h3>Live Shows</h3>
+      <p>Enjoy spectacular performances and entertainment throughout the day</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">🍿</div>
+      <h3>Dining & Treats</h3>
+      <p>Savor delicious food and magical treats from around the park</p>
+    </div>
+  </div>
+
+  <!-- Pricing Section -->
+  <section class="pricing-section">
+    <h2>Ticket Pricing</h2>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="ticket-type">Adult</div>
+        <div class="price">RM370</div>
+        <div class="price-note">Ages 13 and above</div>
+      </div>
+
+      <div class="price-card">
+        <div class="ticket-type">Student</div>
+        <div class="price">RM320</div>
+        <div class="price-note">Valid student ID required</div>
+      </div>
+
+      <div class="price-card">
+        <div class="ticket-type">Children</div>
+        <div class="price">RM250</div>
+        <div class="price-note">Ages 3-12</div>
+      </div>
     </div>
   </section>
+
+  <!-- Call to Action -->
+  <section class="cta-section">
+    <h2>Ready for the Adventure?</h2>
+    <p>Book your tickets now and create magical memories that last a lifetime!</p>
+    <a class="btn btn-primary btn-large" href="/tickets" style="background: white; color: #f5576c; border: none;">Get Started</a>
+  </section>
+
 </main>
 
 </body>

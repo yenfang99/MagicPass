@@ -4,10 +4,17 @@
   <meta charset="UTF-8"/>
   <title>Login</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
+  
+  <!-- Include Header Styles -->
+  <th:block th:replace="~{fragments/header :: header-styles}"></th:block>
+</head>
+<body>
+  <!-- Include Header Fragment -->
+  <div th:replace="~{fragments/header :: header}"></div>
 </head>
 <body>
 
-<header class="nav">
+<!-- <header class="nav">
   <div class="nav-inner">
     <div class="brand">
       MagicPass
@@ -15,7 +22,7 @@
     </div>
     <a class="btn btn-outline" href="/">Home</a>
   </div>
-</header>
+</header> -->
 
 <main class="container">
   <section class="card">

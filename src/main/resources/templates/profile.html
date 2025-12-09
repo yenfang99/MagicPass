@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>My Account - MagicPass</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <th:block th:replace="~{fragments/header :: header-styles}"></th:block>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container">
+  <section class="card">
+    <h2 style="margin-top:0;">My Account</h2>
+    <p class="muted" style="margin-top:6px;">
+      Here are your account details.
+    </p>
+
+    <table class="table" style="margin-top:16px;">
+      <tr>
+        <td class="muted">Email</td>
+        <td class="right" th:text="${user.email}">user@example.com</td>
+      </tr>
+      <tr>
+        <td class="muted">Member Status</td>
+        <td class="right">
+          <span th:text="${user.member} ? 'Member' : 'Non-member'">Member</span>
+        </td>
+      </tr>
+    </table>
+
+    <div class="actions" style="margin-top:16px;">
+      <a class="btn btn-outline" href="/">Back to Home</a>
+      <a class="btn btn-primary" href="/tickets">Buy Tickets</a>
+    </div>
+  </section>
+</main>
+
+</body>
+</html>

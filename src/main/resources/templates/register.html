@@ -2,20 +2,24 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
+<<<<<<< Updated upstream
+  <title>Receipt</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+=======
   <title>Create Account</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
+
+>>>>>>> Stashed changes
+  <!-- Include Header Styles -->
+  <th:block th:replace="~{fragments/header :: header-styles}"></th:block>
 </head>
 <body>
+<<<<<<< Updated upstream
+=======
+  
+  <!-- Include Header Fragment -->
+  <div th:replace="~{fragments/header :: header}"></div>
 
-<header class="nav">
-  <div class="nav-inner">
-    <div class="brand">
-      MagicPass
-      <small>Create Account</small>
-    </div>
-    <a class="btn btn-outline" href="/">Home</a>
-  </div>
-</header>
 
 <main class="container">
   <section class="card">
@@ -134,3 +138,84 @@ document.addEventListener('DOMContentLoaded', function () {
 
 </body>
 </html>
+>>>>>>> Stashed changes
+  <!-- Include Header Fragment -->
+  <div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container">
+  <section class="card">
+    <h2 style="margin-top:0;">Payment Successful</h2>
+    <p class="muted" style="margin-top:6px;">Thank you. Here is your receipt.</p>
+
+    <table class="table" style="margin-top:14px;">
+      <tr>
+        <td class="muted">Order ID</td>
+        <td class="right bold" th:text="${order.orderCode}">1</td>
+      </tr>
+      <tr>
+        <td class="muted">Reservation Date</td>
+        <td class="right" th:text="${#temporals.format(order.reservationDate, 'dd/MM/yyyy')}">07/12/2025</td>
+      </tr>
+      <tr>
+        <td class="muted">Payment Method</td>
+        <td class="right" th:text="${order.paymentMethod}">CARD</td>
+      </tr>
+      <tr>
+        <td class="muted">Status</td>
+        <td class="right" th:text="${order.status}">PAID</td>
+      </tr>
+    </table>
+
+    <h3 style="margin-top:18px; margin-bottom:10px;">Order Details</h3>
+
+  <table class="table">
+    <tr th:if="${order.adultQty > 0}">
+      <td class="muted">Adult (RM 370) × <b th:text="${order.adultQty}">0</b></td>
+      <td class="right"
+          th:text="${#numbers.formatDecimal(order.adultQty * 370.0, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
+
+    <tr th:if="${order.studentQty > 0}">
+      <td class="muted">Student (RM 320) × <b th:text="${order.studentQty}">0</b></td>
+      <td class="right"
+          th:text="${#numbers.formatDecimal(order.studentQty * 320.0, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
+
+    <tr th:if="${order.childQty > 0}">
+      <td class="muted">Children (RM 250) × <b th:text="${order.childQty}">0</b></td>
+      <td class="right"
+          th:text="${#numbers.formatDecimal(order.childQty * 250.0, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
+
+    <tr>
+      <td class="muted">Total</td>
+      <td class="right" th:text="${#numbers.formatDecimal(order.total, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
+    <tr>
+      <td class="muted">Discount</td>
+      <td class="right" th:text="${#numbers.formatDecimal(order.discount, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
+    <tr>
+      <td class="muted">Tax (6%)</td>
+      <td class="right" th:text="${#numbers.formatDecimal(order.tax, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
+    <tr>
+      <td class="bold">Grand Total</td>
+      <td class="right bold" th:text="${#numbers.formatDecimal(order.grandTotal, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
+  </table>
+
+
+    <div class="actions" style="margin-top:16px;">
+      <a class="btn btn-outline" href="/tickets">Buy Another Ticket</a>
+      <button class="btn btn-primary" onclick="window.print()">Print</button>
+    </div>
+  </section>
+</main>
+
+</body>
+<<<<<<< Updated upstream
+</html>
+=======
+</html>
+>>>>>>> Stashed changes

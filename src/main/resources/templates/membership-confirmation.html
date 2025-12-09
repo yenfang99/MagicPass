@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Membership Confirmation - MagicPass</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+
+  <!-- Include Header Styles -->
+  <th:block th:replace="~{fragments/header :: header-styles}"></th:block>
+
+  <style>
+    .confirmation-container {
+      max-width: 600px;
+      margin: 60px auto;
+      text-align: center;
+    }
+    .success-icon {
+      font-size: 80px;
+      margin-bottom: 24px;
+    }
+    .confirmation-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 40px;
+      box-shadow: 0 12px 30px rgba(15,23,42,.08);
+    }
+    .confirmation-card h1 {
+      margin: 0 0 12px;
+      font-size: 32px;
+      color: var(--primary);
+    }
+    .confirmation-card p {
+      margin: 0 0 28px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .membership-id {
+      background: var(--primary-soft);
+      border: 2px dashed var(--primary);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 28px 0;
+    }
+    .membership-id-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .membership-id-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--primary);
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Include Header Fragment -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container">
+  <div class="confirmation-container">
+    <div class="success-icon">✅</div>
+    <div class="confirmation-card">
+      <h1>Membership Activated!</h1>
+      <p>Congratulations! Your membership has been successfully activated. You can now enjoy exclusive benefits and discounts on all your ticket purchases.</p>
+
+      <div class="membership-id">
+        <div class="membership-id-label">Your Membership ID:</div>
+        <div class="membership-id-value" th:text="${membershipId}">MEM-XXXXXXXX</div>
+      </div>
+
+      <p style="font-size: 14px; margin-bottom: 32px;">
+        Please save this Membership ID for your records. You'll receive a confirmation email shortly with all the details.
+      </p>
+
+      <div class="actions" style="justify-content: center;">
+        <a class="btn btn-primary" href="/tickets">Purchase Tickets Now</a>
+        <a class="btn btn-outline" href="/">Back to Home</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>
