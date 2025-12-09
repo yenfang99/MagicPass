@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Manage Staff</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    /* simple overlay modal */
+    .modal-backdrop{
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    .modal{
+      background: var(--surface);
+      border-radius: 18px;
+      padding: 20px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 18px 40px rgba(15,23,42,.30);
+      border: 1px solid var(--border);
+    }
+    .modal-backdrop.show{
+      display: flex;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: var(--primary-soft);
+      color: var(--primary2);
+      font-weight: 600;
+    }
+
+    .table th{
+      text-align: left;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .table th, .table td{
+      padding:10px 14px;
+      border-bottom:1px solid var(--border);
+    }
+    .table tr:last-child td{ border-bottom:none; }
+
+    .remove-col{
+      width: 80px;
+      text-align: right;
+    }
+    .remove-col button{
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+
+    /* hide remove buttons by default */
+    .remove-col .remove-btn {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(2px);
+      transition: opacity .15s ease, transform .15s ease;
+    }
+    /* when in removal mode, show them */
+    .table-removal-mode .remove-col .remove-btn {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    /* role badges */
+    .role-badge{
+      display:inline-flex;
+      align-items:center;
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .role-badge.boss{
+      background: #eef2ff;      /* soft blue */
+      color: #1d4ed8;
+    }
+    .role-badge.staff{
+      background: #fee2e2;      /* soft red */
+      color: #b91c1c;
+    }
+  </style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      MagicPass
+      <small>Staff Management</small>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span class="badge">Boss</span>
+      <a class="btn btn-outline" th:href="@{/staff}">Staff Home</a>
+      <a class="btn btn-outline" th:href="@{/logout}">Logout</a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <section class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <div>
+        <h2 style="margin:0;">Manage Staff Accounts</h2>
+        <p class="muted" style="margin:4px 0 0;">
+          View, add, and remove staff who can log in with @magicpass.my accounts.
+        </p>
+      </div>
+
+      <div class="actions" style="margin-top:0;">
+        <a class="btn btn-primary" th:href="@{/staff/manage/add}">Add Staff</a>
+        <button type="button" class="btn btn-outline" id="toggleRemoveBtn">
+          Remove Staff
+        </button>
+      </div>
+    </div>
+
+    <!-- error / success messages -->
+    <div th:if="${error}" class="alert" th:text="${error}"></div>
+    <div th:if="${success}" class="alert"
+         style="border-color:rgba(22,163,74,.35);
+                background:rgba(22,163,74,.12);
+                color:#bbf7d0;"
+         th:text="${success}"></div>
+
+    <table class="table" id="staffTable">
+      <thead>
+      <tr>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Created At</th>
+        <th class="right"> </th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="staff : ${staffList}">
+        <td th:text="${staff.email}">email</td>
+        <td>
+          <span class="role-badge"
+                th:classappend="${staff.boss} ? ' boss' : ' staff'"
+                th:text="${staff.boss} ? 'Boss' : 'Staff'">
+            Role
+          </span>
+        </td>
+        <td>
+          <span class="muted"
+                th:text="${#temporals.format(staff.createdAt, 'dd/MM/yyyy HH:mm')}">
+            09/12/2025 10:39
+          </span>
+        </td>
+        <td class="right remove-col">
+          <button type="button"
+                  class="btn btn-outline remove-btn"
+                  th:attr="data-staff-id=${staff.id}, data-staff-email=${staff.email}"
+                  disabled>
+            Remove
+          </button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+
+    <p class="muted" th:if="${staffList == null or #lists.isEmpty(staffList)}">
+      No staff accounts found yet.
+    </p>
+  </section>
+</main>
+
+<!-- hidden form used to submit deletion -->
+<form id="removeStaffForm" th:action="@{/staff/manage/delete}" method="post" style="display:none;">
+  <input type="hidden" name="id" id="removeStaffId">
+</form>
+
+<!-- confirmation modal -->
+<div class="modal-backdrop" id="confirmModal">
+  <div class="modal">
+    <h3 style="margin-top:0;">Confirm Remove Staff</h3>
+    <p class="muted">
+      You are about to remove staff account:
+      <br>
+      <b id="confirmStaffEmail">staff@magicpass.my</b>
+    </p>
+    <p class="muted">
+      To confirm, type <b>Remove</b> in the box below, then click <b>Confirm</b>.
+    </p>
+
+    <div class="field">
+      <div class="label">Type "Remove" to confirm</div>
+      <input class="input" type="text" id="confirmInput" placeholder="Remove">
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-outline" id="cancelConfirmBtn">Cancel</button>
+      <button type="button" class="btn btn-primary" id="confirmRemoveBtn" disabled>Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const staffTable       = document.getElementById('staffTable');
+  const toggleBtn        = document.getElementById('toggleRemoveBtn');
+  const removeButtons    = document.querySelectorAll('.remove-btn');
+
+  const modalBackdrop    = document.getElementById('confirmModal');
+  const confirmEmailSpan = document.getElementById('confirmStaffEmail');
+  const confirmInput     = document.getElementById('confirmInput');
+  const confirmBtn       = document.getElementById('confirmRemoveBtn');
+  const cancelBtn        = document.getElementById('cancelConfirmBtn');
+
+  const removeForm       = document.getElementById('removeStaffForm');
+  const removeIdInput    = document.getElementById('removeStaffId');
+
+  let currentStaffId = null;
+
+  // --- toggle removal mode (show/hide buttons) ---
+  toggleBtn.addEventListener('click', function () {
+    const isOn = staffTable.classList.toggle('table-removal-mode');
+
+    removeButtons.forEach(btn => {
+      btn.disabled = !isOn;
+    });
+
+    toggleBtn.textContent = isOn ? 'Cancel Remove' : 'Remove Staff';
+  });
+
+  // --- when clicking a remove button ---
+  removeButtons.forEach(btn => {
+    btn.addEventListener('click', function () {
+      currentStaffId = this.dataset.staffId;
+      const email = this.dataset.staffEmail;
+
+      // fill modal info
+      confirmEmailSpan.textContent = email;
+      confirmInput.value = '';
+      confirmBtn.disabled = true;
+
+      // show modal
+      modalBackdrop.classList.add('show');
+      confirmInput.focus();
+    });
+  });
+
+  // --- modal input: enable confirm only when exactly "Remove" ---
+  confirmInput.addEventListener('input', function () {
+    confirmBtn.disabled = (this.value.trim() !== 'Remove');
+  });
+
+  // --- confirm delete ---
+  confirmBtn.addEventListener('click', function () {
+    if (!currentStaffId) return;
+    removeIdInput.value = currentStaffId;
+    modalBackdrop.classList.remove('show');
+    removeForm.submit();
+  });
+
+  // --- cancel modal ---
+  cancelBtn.addEventListener('click', function () {
+    modalBackdrop.classList.remove('show');
+  });
+});
+</script>
+
+</body>
+</html>

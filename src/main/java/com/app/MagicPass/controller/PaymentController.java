@@ -1,3 +1,4 @@
+
 package com.app.MagicPass.controller;
 
 import org.springframework.stereotype.Controller;
@@ -10,6 +11,8 @@ import com.app.MagicPass.dto.PricingBreakdown;
 import com.app.MagicPass.service.DatePolicyService;
 import com.app.MagicPass.service.OrderService;
 import com.app.MagicPass.service.PricingService;
+import com.app.MagicPass.service.StripeService;
+import com.stripe.model.checkout.Session;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -19,13 +22,16 @@ public class PaymentController {
   private final OrderService orderService;
   private final PricingService pricingService;
   private final DatePolicyService datePolicyService;
+  private final StripeService stripeService;
 
   public PaymentController(OrderService orderService,
                            PricingService pricingService,
-                           DatePolicyService datePolicyService) {
+                           DatePolicyService datePolicyService,
+                           StripeService stripeService) {
     this.orderService = orderService;
     this.pricingService = pricingService;
     this.datePolicyService = datePolicyService;
+    this.stripeService = stripeService;
   }
 
   @GetMapping("/payment")
@@ -49,7 +55,9 @@ public class PaymentController {
                         RedirectAttributes ra) {
 
     CheckoutRequest req = (CheckoutRequest) session.getAttribute("previewReq");
-    if (req == null) {
+    PricingBreakdown pricing = (PricingBreakdown) session.getAttribute("previewPricing");
+
+    if (req == null || pricing == null) {
       ra.addFlashAttribute("error", "Session expired. Please re-enter ticket details.");
       return "redirect:/tickets";
     }
@@ -63,17 +71,90 @@ public class PaymentController {
       return "redirect:/tickets";
     }
 
-    // Recalculate pricing (don’t trust session for money)
-    PricingBreakdown pricing = pricingService.calculate(req, false);
+    // Recalculate pricing (don't trust session for money)
+    pricing = pricingService.calculate(req, false);
 
-    // Save order only after payment
-    var order = orderService.createPaidOrder(req, pricing, paymentMethod);
+    try {
+      // Create Stripe checkout session
+      String successUrl = "http://localhost:8081/payment/success?session_id={CHECKOUT_SESSION_ID}";
+      String cancelUrl = "http://localhost:8081/payment/cancel";
 
-    // Clear preview session
-    session.removeAttribute("previewReq");
-    session.removeAttribute("previewPricing");
+      Session stripeSession = stripeService.createTicketCheckoutSession(
+        pricing.getGrandTotal(),
+        req,
+        successUrl,
+        cancelUrl
+      );
 
-    return "redirect:/receipt/" + order.getId();
+      // Store session info for later verification
+      session.setAttribute("stripeSessionId", stripeSession.getId());
+
+      // Redirect to Stripe Checkout
+      return "redirect:" + stripeSession.getUrl();
+
+    } catch (Exception e) {
+      ra.addFlashAttribute("error", "Payment processing failed: " + e.getMessage());
+      return "redirect:/payment";
+    }
+  }
+
+  @GetMapping("/payment/success")
+  public String paymentSuccess(@RequestParam("session_id") String sessionId,
+                               HttpSession session,
+                               RedirectAttributes ra) {
+    try {
+      // Verify payment with Stripe
+      Session stripeSession = stripeService.retrieveSession(sessionId);
+
+      if (!"complete".equals(stripeSession.getStatus())) {
+        ra.addFlashAttribute("error", "Payment was not completed.");
+        return "redirect:/tickets";
+      }
+
+      // Retrieve booking details from session
+      CheckoutRequest req = (CheckoutRequest) session.getAttribute("previewReq");
+      PricingBreakdown pricing = (PricingBreakdown) session.getAttribute("previewPricing");
+
+      if (req == null || pricing == null) {
+        ra.addFlashAttribute("error", "Session expired. Contact support with payment confirmation.");
+        return "redirect:/tickets";
+      }
+
+      // Get the actual payment method used
+      String paymentMethod = "CARD"; // Default
+      try {
+        if (stripeSession.getPaymentIntent() != null) {
+          com.stripe.model.PaymentIntent paymentIntent = com.stripe.model.PaymentIntent.retrieve(stripeSession.getPaymentIntent());
+          if (paymentIntent.getPaymentMethod() != null) {
+            com.stripe.model.PaymentMethod pm = com.stripe.model.PaymentMethod.retrieve(paymentIntent.getPaymentMethod());
+            paymentMethod = pm.getType().toUpperCase();
+          }
+        }
+      } catch (Exception e) {
+        // If we can't retrieve payment method, use default
+        paymentMethod = "CARD";
+      }
+
+      // Create the order after successful payment
+      var order = orderService.createPaidOrder(req, pricing, paymentMethod);
+
+      // Clear session
+      session.removeAttribute("previewReq");
+      session.removeAttribute("previewPricing");
+      session.removeAttribute("stripeSessionId");
+
+      return "redirect:/receipt/" + order.getId();
+
+    } catch (Exception e) {
+      ra.addFlashAttribute("error", "Payment verification failed: " + e.getMessage());
+      return "redirect:/tickets";
+    }
+  }
+
+  @GetMapping("/payment/cancel")
+  public String paymentCancel(RedirectAttributes ra) {
+    ra.addFlashAttribute("error", "Payment was cancelled.");
+    return "redirect:/payment";
   }
 
   @GetMapping("/receipt/{orderId}")

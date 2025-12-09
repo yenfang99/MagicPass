@@ -6,6 +6,9 @@
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
+  <!-- Include Header Styles -->
+  <th:block th:replace="~{fragments/header :: header-styles}"></th:block>
+
 </head>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
@@ -40,15 +43,8 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 <body>
-<header class="nav">
-  <div class="nav-inner">
-    <div class="brand">
-      Disney Ticketing
-      <small>Purchase Ticket</small>
-    </div>
-    <a class="btn btn-outline" href="/">Home</a>
-  </div>
-</header>
+<!-- Include Header Fragment -->
+<div th:replace="~{fragments/header :: header}"></div>
 
 <main class="container">
   <section class="card">
@@ -58,6 +54,8 @@ document.addEventListener("DOMContentLoaded", () => {
     <div th:if="${error}" class="alert" th:text="${error}"></div>
 
     <form th:action="@{/tickets/preview}" th:object="${req}" method="post">
+      <!-- Hidden userId field for membership discount lookup -->
+      <input type="hidden" th:field="*{userId}" value="1"/>
 
       <div class="grid grid-3">
         <div class="field">
