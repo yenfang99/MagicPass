@@ -25,8 +25,18 @@
       <a class="nav-link" href="/membership">
         <span>Membership</span>
       </a>
-      <a class="nav-link" href="/login">Login</a>
-      <a class="nav-link" href="/register">Register</a>
+
+      <!-- Show login/register when not logged in -->
+      <th:block th:if="${session.currentUser == null}">
+        <a class="nav-link" href="/login">Login</a>
+        <a class="nav-link" href="/register">Register</a>
+      </th:block>
+
+      <!-- Show user info and logout when logged in -->
+      <th:block th:if="${session.currentUser != null}">
+        <span class="user-info" th:text="${session.currentUser.email}">user@example.com</span>
+        <a class="nav-link logout-link" href="/logout">Logout</a>
+      </th:block>
     </nav>
   </div>
 </header>
@@ -155,6 +165,32 @@
 
   .nav-icon {
     font-size: 18px;
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    padding: 10px 18px;
+    border-radius: 12px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 14px;
+    border: 2px solid transparent;
+  }
+
+  .logout-link {
+    background: rgba(239,68,68,0.1);
+    color: #dc2626;
+  }
+
+  .logout-link:hover {
+    background: #dc2626;
+    color: white;
+  }
+
+  .logout-link:hover::before {
+    display: none;
   }
 
   /* Responsive Design */

@@ -213,7 +213,6 @@
 
       <form th:action="@{/membership/purchase}" method="post">
         <input type="hidden" name="membershipTypeId" th:value="${type.id}"/>
-        <input type="hidden" name="userId" value="1"/><!-- Replace with actual logged-in user ID -->
         <button type="submit" class="btn btn-primary purchase-btn"
                 th:text="'Purchase ' + ${type.displayName}">Purchase</button>
       </form>

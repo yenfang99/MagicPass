@@ -9,6 +9,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.app.MagicPass.dto.CheckoutRequest;
 import com.app.MagicPass.dto.PricingBreakdown;
+import com.app.MagicPass.model.User;
 import com.app.MagicPass.service.DatePolicyService;
 import com.app.MagicPass.service.PricingService;
 
@@ -26,11 +27,20 @@ public class TicketController {
     }
 
     @GetMapping("/tickets")
-    public String tickets(@RequestParam(value = "userId", defaultValue = "1") Long userId, Model model) {
+    public String tickets(HttpSession session, Model model) {
+        // Get current user from session
+        User currentUser = (User) session.getAttribute("currentUser");
+
         CheckoutRequest req = new CheckoutRequest();
         req.setReservationDate(LocalDate.now());
-        req.setUserId(userId);  // Set userId for membership discount lookup
+
+        // Set userId from session if logged in
+        if (currentUser != null) {
+            req.setUserId(currentUser.getId());  // Set userId for membership discount lookup
+        }
+
         model.addAttribute("req", req);
+        model.addAttribute("currentUser", currentUser);
         return "tickets";
     }
 

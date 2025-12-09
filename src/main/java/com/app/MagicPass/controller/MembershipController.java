@@ -2,6 +2,7 @@ package com.app.MagicPass.controller;
 
 import com.app.MagicPass.model.Membership;
 import com.app.MagicPass.model.MembershipType;
+import com.app.MagicPass.model.User;
 import com.app.MagicPass.service.MembershipService;
 import com.app.MagicPass.service.MembershipTypeService;
 import com.app.MagicPass.service.StripeService;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
@@ -35,7 +37,16 @@ public class MembershipController {
     }
 
     @GetMapping
-    public String membershipPage(@RequestParam(value = "userId", defaultValue = "1") Long userId, Model model) {
+    public String membershipPage(HttpSession session, Model model) {
+        // Get current user from session
+        User currentUser = (User) session.getAttribute("currentUser");
+
+        if (currentUser == null) {
+            return "redirect:/login";  // Redirect to login if not authenticated
+        }
+
+        Long userId = currentUser.getId();
+
         // Load dynamic membership types from database
         List<MembershipType> membershipTypes = membershipTypeService.getActiveMembershipTypes();
         model.addAttribute("membershipTypes", membershipTypes);
@@ -43,6 +54,7 @@ public class MembershipController {
         // Get user's current active membership
         Membership currentMembership = membershipService.getActiveMembership(userId);
         model.addAttribute("currentMembership", currentMembership);
+        model.addAttribute("currentUser", currentUser);
 
         return "membership";
     }
@@ -50,11 +62,21 @@ public class MembershipController {
     @PostMapping("/purchase")
     public String purchaseMembership(
             @RequestParam("membershipTypeId") Long membershipTypeId,
-            @RequestParam(value = "userId", defaultValue = "1") Long userId,
+            HttpSession httpSession,
             HttpServletRequest request,
             RedirectAttributes ra) {
 
         try {
+            // Get current user from session
+            User currentUser = (User) httpSession.getAttribute("currentUser");
+
+            if (currentUser == null) {
+                ra.addFlashAttribute("error", "Please login to purchase a membership.");
+                return "redirect:/login";
+            }
+
+            Long userId = currentUser.getId();
+
             // Get the membership type from database
             MembershipType membershipType = membershipTypeService.getMembershipTypeById(membershipTypeId);
 
