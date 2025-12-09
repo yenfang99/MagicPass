@@ -1,9 +1,14 @@
 package com.app.MagicPass.controller;
 
+
+import com.app.MagicPass.service.MembershipService;
+import com.app.MagicPass.service.MembershipTypeService;
+
 import com.app.MagicPass.model.Staff;
 import com.app.MagicPass.service.MembershipService;
 import com.app.MagicPass.service.MembershipTypeService;
 import jakarta.servlet.http.HttpSession;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +28,7 @@ public class AdminDashboardController {
     }
 
     @GetMapping("/dashboard")
+
     public String dashboard(HttpSession session, Model model) {
         // Check if staff is logged in
         Staff currentStaff = (Staff) session.getAttribute("currentStaff");
@@ -44,7 +50,9 @@ public class AdminDashboardController {
         model.addAttribute("totalMembers", 0); // Placeholder
         model.addAttribute("totalTickets", 0); // Placeholder
         model.addAttribute("totalRevenue", 0.0); // Placeholder
+
         model.addAttribute("currentStaff", currentStaff);
+
 
         return "admin/dashboard";
     }
