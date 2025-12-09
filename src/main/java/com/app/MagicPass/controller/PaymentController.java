@@ -1,3 +1,4 @@
+
 package com.app.MagicPass.controller;
 
 import org.springframework.stereotype.Controller;
