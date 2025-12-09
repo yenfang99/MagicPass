@@ -35,6 +35,9 @@ public class MembershipType {
     @Column(nullable = false)
     private Integer displayOrder = 0;  // For sorting display
 
+    @Column(nullable = false)
+    private Integer tierLevel = 1;  // Hierarchy level: 1=lowest, higher number=higher tier
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -120,6 +123,14 @@ public class MembershipType {
 
     public void setDisplayOrder(Integer displayOrder) {
         this.displayOrder = displayOrder;
+    }
+
+    public Integer getTierLevel() {
+        return tierLevel;
+    }
+
+    public void setTierLevel(Integer tierLevel) {
+        this.tierLevel = tierLevel;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -23,11 +23,18 @@ public class StripeService {
             String tierName,
             Double price,
             Long userId,
+            Long membershipTypeId,
+            Integer durationMonths,
             String successUrl,
             String cancelUrl) throws StripeException {
 
         // Convert price to cents (Stripe uses smallest currency unit)
         long priceInCents = (long) (price * 100);
+
+        // Build description based on duration
+        String durationDescription = durationMonths == 12
+            ? "1 year membership with exclusive benefits"
+            : durationMonths + " months membership with exclusive benefits";
 
         SessionCreateParams params = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
@@ -43,7 +50,7 @@ public class StripeService {
                                                 .setProductData(
                                                         SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                                                 .setName("MagicPass " + tierName + " Membership")
-                                                                .setDescription("1 year membership with exclusive benefits")
+                                                                .setDescription(durationDescription)
                                                                 .build()
                                                 )
                                                 .build()
@@ -56,8 +63,7 @@ public class StripeService {
                 .addPaymentMethodType(SessionCreateParams.PaymentMethodType.GRABPAY)  // GrabPay e-wallet
                 // Store metadata to retrieve later
                 .putMetadata("userId", userId.toString())
-                .putMetadata("tier", tierName)
-                .putMetadata("membershipType", "ANNUAL")
+                .putMetadata("membershipTypeId", membershipTypeId.toString())
                 .build();
 
         return Session.create(params);

@@ -322,9 +322,10 @@
           <td>
             <th:block th:if="${userMembershipMap.containsKey(user.id)}">
               <th:block th:with="membership=${userMembershipMap.get(user.id)}">
-                <span th:if="${membership.tier.name() == 'SILVER'}" class="badge badge-silver" th:text="${membership.tier.displayName}">Silver</span>
-                <span th:if="${membership.tier.name() == 'GOLD'}" class="badge badge-gold" th:text="${membership.tier.displayName}">Gold</span>
-                <span th:if="${membership.tier.name() == 'PLATINUM'}" class="badge badge-platinum" th:text="${membership.tier.displayName}">Platinum</span>
+                <span th:if="${#strings.toUpperCase(membership.membershipType.name) == 'SILVER'}" class="badge badge-silver" th:text="${membership.membershipType.displayName}">Silver</span>
+                <span th:if="${#strings.toUpperCase(membership.membershipType.name) == 'GOLD'}" class="badge badge-gold" th:text="${membership.membershipType.displayName}">Gold</span>
+                <span th:if="${#strings.toUpperCase(membership.membershipType.name) == 'PLATINUM'}" class="badge badge-platinum" th:text="${membership.membershipType.displayName}">Platinum</span>
+                <span th:unless="${#strings.toUpperCase(membership.membershipType.name) == 'SILVER' or #strings.toUpperCase(membership.membershipType.name) == 'GOLD' or #strings.toUpperCase(membership.membershipType.name) == 'PLATINUM'}" class="badge badge-member" th:text="${membership.membershipType.displayName}">Custom</span>
               </th:block>
             </th:block>
             <th:block th:unless="${userMembershipMap.containsKey(user.id)}">

@@ -1,6 +1,7 @@
 package com.app.MagicPass.service;
 
 import com.app.MagicPass.model.Membership;
+import com.app.MagicPass.model.MembershipType;
 import com.app.MagicPass.repository.MembershipRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,15 +20,18 @@ public class MembershipService {
     }
 
     @Transactional
-    public Membership purchaseMembership(Long userId, Membership.MembershipTier tier) {
+    public Membership purchaseMembership(Long userId, MembershipType membershipType) {
         // Check if user already has an active membership
         Membership existingMembership = getActiveMembership(userId);
 
         if (existingMembership != null) {
-            // Check if trying to purchase same or lower tier
-            if (tier.ordinal() <= existingMembership.getTier().ordinal()) {
+            // Check if trying to purchase same or lower tier level
+            int currentTierLevel = existingMembership.getMembershipType().getTierLevel();
+            int newTierLevel = membershipType.getTierLevel();
+
+            if (newTierLevel <= currentTierLevel) {
                 throw new IllegalStateException(
-                    "You already have an active " + existingMembership.getTier().getDisplayName() +
+                    "You already have an active " + existingMembership.getMembershipType().getDisplayName() +
                     " membership. You can only upgrade to a higher tier."
                 );
             }
@@ -41,29 +45,35 @@ public class MembershipService {
         Membership membership = new Membership();
         membership.setMembershipId("MEM-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         membership.setUserId(userId);  // This references users.id
-        membership.setTier(tier);
-        membership.setPrice(tier.getPrice());
-        membership.setDiscountRate(tier.getDiscountRate());
+        membership.setMembershipType(membershipType);
+        membership.setPrice(membershipType.getPrice());
+        membership.setDiscountRate(membershipType.getDiscountRate());
         membership.setStartDate(LocalDateTime.now());
-        membership.setExpiryDate(LocalDateTime.now().plusYears(1)); // 1 year validity
+
+        // Use durationMonths from membership type
+        int durationMonths = membershipType.getDurationMonths();
+        membership.setExpiryDate(LocalDateTime.now().plusMonths(durationMonths));
         membership.setStatus(Membership.MembershipStatus.ACTIVE);
 
         return membershipRepository.save(membership);
     }
 
     /**
-     * Check if user can purchase or upgrade to a specific tier
+     * Check if user can purchase or upgrade to a specific membership type
      */
-    public String canPurchaseTier(Long userId, Membership.MembershipTier tier) {
+    public String canPurchaseMembershipType(Long userId, MembershipType membershipType) {
         Membership existingMembership = getActiveMembership(userId);
 
         if (existingMembership == null) {
             return null; // Can purchase any tier
         }
 
-        // Check if trying to purchase same or lower tier
-        if (tier.ordinal() <= existingMembership.getTier().ordinal()) {
-            return "You already have an active " + existingMembership.getTier().getDisplayName() +
+        // Check if trying to purchase same or lower tier level
+        int currentTierLevel = existingMembership.getMembershipType().getTierLevel();
+        int newTierLevel = membershipType.getTierLevel();
+
+        if (newTierLevel <= currentTierLevel) {
+            return "You already have an active " + existingMembership.getMembershipType().getDisplayName() +
                    " membership. You can only upgrade to a higher tier.";
         }
 
@@ -84,7 +94,8 @@ public class MembershipService {
         return membershipRepository.findAll();
     }
 
-    public Membership.MembershipTier[] getAllTiers() {
-        return Membership.MembershipTier.values();
+    public Membership getMembershipByMembershipId(String membershipId) {
+        return membershipRepository.findByMembershipId(membershipId)
+                .orElse(null);
     }
 }

@@ -63,6 +63,33 @@
       font-weight: 700;
       letter-spacing: 1px;
     }
+    .membership-card.disabled {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+    .membership-card.current-plan {
+      border-color: #10b981;
+      background: linear-gradient(to bottom, var(--surface), rgba(16, 185, 129, 0.05));
+    }
+    .tier-badge {
+      position: absolute;
+      top: -12px;
+      right: 20px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .tier-badge.current {
+      background: #10b981;
+      color: white;
+    }
+    .tier-badge.lower {
+      background: #94a3b8;
+      color: white;
+    }
     .tier-icon {
       font-size: 64px;
       margin-bottom: 16px;
@@ -158,11 +185,15 @@
 
   <!-- Show Current Membership if exists -->
   <div th:if="${currentMembership != null}" style="margin-bottom: 24px; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
       <span style="font-size: 32px;">💎</span>
-      <div>
+      <div style="flex: 1;">
         <div style="font-size: 14px; opacity: 0.9;">Your Current Membership</div>
-        <div style="font-size: 24px; font-weight: 700;" th:text="${currentMembership.tier.displayName}">Gold</div>
+        <div style="font-size: 24px; font-weight: 700;" th:text="${currentMembership.membershipType.displayName}">Gold</div>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-size: 14px; opacity: 0.9;">Discount Rate</div>
+        <div style="font-size: 28px; font-weight: 800;" th:text="${currentMembership.discountRate * 100} + '%'">10%</div>
       </div>
     </div>
     <div style="font-size: 14px; opacity: 0.9;">
@@ -184,12 +215,21 @@
   <div class="membership-grid">
 
     <!-- Dynamic Membership Cards from Database -->
-    <div th:each="type, iterStat : ${membershipTypes}"
-         class="membership-card"
-         th:classappend="${iterStat.index == 1} ? 'featured' : ''">
+    <th:block th:each="type, iterStat : ${membershipTypes}">
+      <th:block th:with="
+        canPurchase=${type.tierLevel > currentTierLevel},
+        isCurrent=${currentMembership != null and type.tierLevel == currentTierLevel},
+        isLower=${currentMembership != null and type.tierLevel < currentTierLevel}">
 
-      <!-- Dynamic Icon based on name -->
-      <div class="tier-icon" th:text="${type.name == 'SILVER' ? '🥈' : (type.name == 'GOLD' ? '🥇' : (type.name == 'PLATINUM' ? '💎' : '✨'))}">✨</div>
+        <div class="membership-card"
+             th:classappend="${iterStat.index == 1 and canPurchase ? 'featured' : ''} + ${isCurrent ? ' current-plan' : ''} + ${isLower ? ' disabled' : ''}">
+
+          <!-- Badge for current or lower tier -->
+          <span th:if="${isCurrent}" class="tier-badge current">Your Plan</span>
+          <span th:if="${isLower}" class="tier-badge lower">Lower Tier</span>
+
+          <!-- Dynamic Icon based on name -->
+          <div class="tier-icon" th:text="${type.name == 'SILVER' ? '🥈' : (type.name == 'GOLD' ? '🥇' : (type.name == 'PLATINUM' ? '💎' : '✨'))}">✨</div>
 
       <div class="tier-name" th:text="${type.displayName}">Membership</div>
 
@@ -211,12 +251,39 @@
         </ul>
       </div>
 
-      <form th:action="@{/membership/purchase}" method="post">
-        <input type="hidden" name="membershipTypeId" th:value="${type.id}"/>
-        <button type="submit" class="btn btn-primary purchase-btn"
-                th:text="'Purchase ' + ${type.displayName}">Purchase</button>
-      </form>
-    </div>
+          <!-- Purchase form with conditional button -->
+          <form th:action="@{/membership/purchase}" method="post">
+            <input type="hidden" name="membershipTypeId" th:value="${type.id}"/>
+
+            <!-- Show different button states based on tier level -->
+            <button th:if="${canPurchase}"
+                    type="submit"
+                    class="btn btn-primary purchase-btn"
+                    th:text="'Purchase ' + ${type.displayName}">Purchase</button>
+
+            <button th:if="${isCurrent}"
+                    type="button"
+                    class="btn btn-primary purchase-btn"
+                    disabled
+                    style="opacity: 0.6; cursor: not-allowed; background: #10b981; border-color: #10b981;"
+                    th:text="'Current Plan'">Current Plan</button>
+
+            <button th:if="${isLower}"
+                    type="button"
+                    class="btn btn-primary purchase-btn"
+                    disabled
+                    style="opacity: 0.5; cursor: not-allowed; background: #94a3b8; border-color: #94a3b8;"
+                    th:text="'Not Available'">Not Available</button>
+
+            <!-- Users without membership can buy any tier -->
+            <button th:if="${currentMembership == null and !canPurchase}"
+                    type="submit"
+                    class="btn btn-primary purchase-btn"
+                    th:text="'Purchase ' + ${type.displayName}">Purchase</button>
+          </form>
+        </div>
+      </th:block>
+    </th:block>
 
     <!-- Show message if no membership types available -->
     <div th:if="${#lists.isEmpty(membershipTypes)}"

@@ -1,3 +1,4 @@
+
 package com.app.MagicPass.controller;
 
 import com.app.MagicPass.model.Membership;
@@ -56,6 +57,13 @@ public class MembershipController {
         model.addAttribute("currentMembership", currentMembership);
         model.addAttribute("currentUser", currentUser);
 
+        // Add current tier level for comparison in template
+        if (currentMembership != null) {
+            model.addAttribute("currentTierLevel", currentMembership.getMembershipType().getTierLevel());
+        } else {
+            model.addAttribute("currentTierLevel", 0); // No membership = can purchase any tier
+        }
+
         return "membership";
     }
 
@@ -88,12 +96,11 @@ public class MembershipController {
                     membershipType.getDisplayName(),
                     membershipType.getPrice(),
                     userId,
+                    membershipType.getId(),
+                    membershipType.getDurationMonths(),
                     baseUrl + "/membership/success?session_id={CHECKOUT_SESSION_ID}",
                     baseUrl + "/membership/cancel"
             );
-
-            // Store membershipTypeId in Stripe metadata
-            // Note: You may want to add this to the createCheckoutSession method
 
             // Redirect to Stripe Checkout
             return "redirect:" + session.getUrl();
@@ -117,11 +124,13 @@ public class MembershipController {
             if ("paid".equals(session.getPaymentStatus())) {
                 // Get metadata
                 String userId = session.getMetadata().get("userId");
-                String tierName = session.getMetadata().get("tier");
+                String membershipTypeIdStr = session.getMetadata().get("membershipTypeId");
+
+                // Get membership type from database
+                MembershipType membershipType = membershipTypeService.getMembershipTypeById(Long.parseLong(membershipTypeIdStr));
 
                 // Create membership
-                Membership.MembershipTier tier = Membership.MembershipTier.valueOf(tierName.toUpperCase());
-                Membership membership = membershipService.purchaseMembership(Long.parseLong(userId), tier);
+                Membership membership = membershipService.purchaseMembership(Long.parseLong(userId), membershipType);
 
                 ra.addFlashAttribute("success", "Payment successful!");
                 return "redirect:/membership/confirmation?id=" + membership.getMembershipId();
@@ -143,9 +152,59 @@ public class MembershipController {
     }
 
     @GetMapping("/confirmation")
-    public String confirmation(@RequestParam("id") String membershipId, Model model) {
-        // In a real app, you'd fetch the membership details here
-        model.addAttribute("membershipId", membershipId);
-        return "membership-confirmation";
+    public String confirmation(@RequestParam("id") String membershipId, Model model, RedirectAttributes ra) {
+        try {
+            // Fetch the membership details from database
+            Membership membership = membershipService.getMembershipByMembershipId(membershipId);
+
+            if (membership == null) {
+                ra.addFlashAttribute("error", "Membership not found.");
+                return "redirect:/membership";
+            }
+
+            MembershipType membershipType = membership.getMembershipType();
+
+            // Add all membership details to model
+            model.addAttribute("membershipId", membership.getMembershipId());
+            model.addAttribute("tier", membershipType.getDisplayName());
+            model.addAttribute("startDate", membership.getStartDate());
+            model.addAttribute("expiryDate", membership.getExpiryDate());
+            model.addAttribute("discountRate", membership.getDiscountRate() * 100); // Convert to percentage
+            model.addAttribute("price", membership.getPrice());
+
+            // Get benefits from membership type description
+            String description = membershipType.getDescription() != null ? membershipType.getDescription() : "";
+
+            // Split description into lines for display
+            java.util.List<String> benefitsList = new java.util.ArrayList<>();
+            if (description != null && !description.isEmpty()) {
+                // Try splitting by newlines first
+                String[] lines = description.split("\\r?\\n");
+                if (lines.length > 1) {
+                    for (String line : lines) {
+                        String trimmed = line.trim();
+                        if (!trimmed.isEmpty()) {
+                            benefitsList.add(trimmed);
+                        }
+                    }
+                } else {
+                    // No newlines - try splitting by periods
+                    String[] sentences = description.split("\\.");
+                    for (String sentence : sentences) {
+                        String trimmed = sentence.trim();
+                        if (!trimmed.isEmpty()) {
+                            benefitsList.add(trimmed);
+                        }
+                    }
+                }
+            }
+
+            model.addAttribute("benefitsList", benefitsList);
+
+            return "membership-confirmation";
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Error loading membership details: " + e.getMessage());
+            return "redirect:/membership";
+        }
     }
 }
