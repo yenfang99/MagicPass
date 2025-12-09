@@ -4,10 +4,24 @@
   <meta charset="UTF-8"/>
   <title>Login</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
+<<<<<<< Updated upstream
 </head>
 <body>
 
 <header class="nav">
+=======
+  
+  <!-- Include Header Styles -->
+  <th:block th:replace="~{fragments/header :: header-styles}"></th:block>
+</head>
+<body>
+  <!-- Include Header Fragment -->
+  <div th:replace="~{fragments/header :: header}"></div>
+</head>
+<body>
+
+<!-- <header class="nav">
+>>>>>>> Stashed changes
   <div class="nav-inner">
     <div class="brand">
       MagicPass
@@ -15,7 +29,11 @@
     </div>
     <a class="btn btn-outline" href="/">Home</a>
   </div>
+<<<<<<< Updated upstream
 </header>
+=======
+</header> -->
+>>>>>>> Stashed changes
 
 <main class="container">
   <section class="card">

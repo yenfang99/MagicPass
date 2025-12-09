@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
-  <title th:text="${mode == 'create' ? 'Create' : 'Edit'} + ' Membership Type'">Membership Type Form</title>
+  <title th:text="${mode == 'create' ? 'Create' : 'Edit'} + ' Ticket'">Ticket Form</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <style>
     body {
@@ -131,14 +131,14 @@
 
     <div class="menu-section">
       <h3 class="menu-section-title">Management</h3>
-      <a href="/admin/membership-types" class="menu-item active">
+      <a href="/admin/membership-types" class="menu-item">
         <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
         Membership Types
       </a>
-      <a href="/admin/tickets" class="menu-item">
+      <a href="/admin/tickets" class="menu-item active">
         <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M3 7v4a1 1 0 0 0 1 1h3"></path>
           <path d="M7 7v10"></path>
@@ -157,8 +157,6 @@
         </svg>
         Users
       </a>
-<<<<<<< Updated upstream
-=======
       <a href="/staff/manage" class="menu-item">
         <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -168,7 +166,6 @@
         </svg>
         Manage Staff
       </a>
->>>>>>> Stashed changes
     </div>
 
     <div class="menu-section">
@@ -184,10 +181,6 @@
   </nav>
 
   <div class="sidebar-footer">
-<<<<<<< Updated upstream
-    <a href="/" class="btn btn-outline" style="width: 100%; justify-content: center;">
-      Back to Site
-=======
     <div style="padding: 0 0 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px;">
       <div style="font-size: 11px; color: var(--muted); font-weight: 600; margin-bottom: 4px;">Logged in as:</div>
       <div style="font-size: 13px; font-weight: 600; color: var(--text);" th:text="${session.currentStaff?.email}">staff@magicpass.my</div>
@@ -196,7 +189,6 @@
     </div>
     <a href="/logout" class="btn btn-outline" style="width: 100%; justify-content: center; background: rgba(239,68,68,0.1); color: #dc2626;">
       Logout
->>>>>>> Stashed changes
     </a>
   </div>
 </aside>
@@ -204,76 +196,84 @@
 <!-- Main Content -->
 <main class="main-content">
   <section class="card">
-    <h2 style="margin-top:0;" th:text="${mode == 'create' ? 'Create New' : 'Edit'} + ' Membership Type'">Form</h2>
+    <h2 style="margin-top:0;" th:text="${mode == 'create' ? 'Create New' : 'Edit'} + ' Ticket'">Form</h2>
 
     <div th:if="${error}" class="alert" th:text="${error}"></div>
 
-    <form th:action="${mode == 'create' ? '/admin/membership-types/create' : '/admin/membership-types/edit/' + membershipType.id}"
-          th:object="${membershipType}"
+    <form th:action="${mode == 'create' ? '/admin/tickets/create' : '/admin/tickets/edit/' + ticket.id}"
+          th:object="${ticket}"
           method="post">
 
       <div class="field">
-        <label class="label" for="name">Name *</label>
-        <input class="input" type="text" id="name" th:field="*{name}"
-               placeholder="e.g., SILVER" required/>
-        <div class="hint">Internal name (uppercase, no spaces). Used as unique identifier.</div>
+        <label class="label" for="orderCode">Order Code *</label>
+        <input class="input" type="text" id="orderCode" th:field="*{orderCode}"
+               placeholder="e.g., ORD-001" required/>
+        <div class="hint">Unique order identifier.</div>
       </div>
 
       <div class="field">
-        <label class="label" for="displayName">Display Name *</label>
-        <input class="input" type="text" id="displayName" th:field="*{displayName}"
-               placeholder="e.g., Silver Membership" required/>
-        <div class="hint">Name shown to customers.</div>
+        <label class="label" for="customerId">Customer ID *</label>
+        <input class="input" type="text" id="customerId" th:field="*{customerId}"
+               placeholder="e.g., CUST-001" required/>
       </div>
 
       <div class="field">
-        <label class="label" for="description">Description</label>
-        <textarea class="input" id="description" th:field="*{description}" rows="3"
-                  placeholder="Describe the benefits of this membership tier..."></textarea>
+        <label class="label" for="reservationDate">Reservation Date *</label>
+        <input class="input" type="date" id="reservationDate" th:field="*{reservationDate}" required/>
       </div>
 
       <div class="grid grid-3">
         <div class="field">
-          <label class="label" for="price">Price (MYR) *</label>
-          <input class="input" type="number" id="price" th:field="*{price}"
-                 step="0.01" min="0" placeholder="99.00" required/>
-        </div>
-
-        <div class="field">
-          <label class="label" for="discountRate">Discount Rate *</label>
-          <input class="input" type="number" id="discountRate" th:field="*{discountRate}"
-                 step="0.01" min="0" max="1" placeholder="0.05" required/>
-          <div class="hint">Enter as decimal (0.05 = 5%)</div>
-        </div>
-
-        <div class="field">
-          <label class="label" for="durationMonths">Duration (Months) *</label>
-          <input class="input" type="number" id="durationMonths" th:field="*{durationMonths}"
-                 min="1" placeholder="12" required/>
-        </div>
-      </div>
-
-      <div class="grid grid-3">
-        <div class="field">
-          <label class="label" for="displayOrder">Display Order *</label>
-          <input class="input" type="number" id="displayOrder" th:field="*{displayOrder}"
+          <label class="label" for="adultQty">Adult Qty *</label>
+          <input class="input" type="number" id="adultQty" th:field="*{adultQty}"
                  min="0" placeholder="0" required/>
-          <div class="hint">Lower numbers appear first.</div>
         </div>
 
         <div class="field">
-          <label class="label" for="active">Status *</label>
-          <select class="input" id="active" th:field="*{active}" required>
-            <option th:value="true">Active</option>
-            <option th:value="false">Inactive</option>
-          </select>
+          <label class="label" for="studentQty">Student Qty *</label>
+          <input class="input" type="number" id="studentQty" th:field="*{studentQty}"
+                 min="0" placeholder="0" required/>
         </div>
+
+        <div class="field">
+          <label class="label" for="childQty">Child Qty *</label>
+          <input class="input" type="number" id="childQty" th:field="*{childQty}"
+                 min="0" placeholder="0" required/>
+        </div>
+      </div>
+
+      <div class="grid grid-3">
+        <div class="field">
+          <label class="label" for="total">Total (RM) *</label>
+          <input class="input" type="number" id="total" th:field="*{total}"
+                 step="0.01" min="0" placeholder="0.00" required/>
+        </div>
+
+        <div class="field">
+          <label class="label" for="tax">Tax (RM) *</label>
+          <input class="input" type="number" id="tax" th:field="*{tax}"
+                 step="0.01" min="0" placeholder="0.00" required/>
+        </div>
+
+        <div class="field">
+          <label class="label" for="grandTotal">Grand Total (RM) *</label>
+          <input class="input" type="number" id="grandTotal" th:field="*{grandTotal}"
+                 step="0.01" min="0" placeholder="0.00" required/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="status">Status *</label>
+        <select class="input" id="status" th:field="*{status}" required>
+          <option value="PREVIEW">Preview</option>
+          <option value="PAID">Paid</option>
+        </select>
       </div>
 
       <div class="actions">
-        <a class="btn btn-outline" th:href="@{/admin/membership-types}">Cancel</a>
+        <a class="btn btn-outline" th:href="@{/admin/tickets}">Cancel</a>
         <button class="btn btn-primary" type="submit"
-                th:text="${mode == 'create' ? 'Create' : 'Update'} + ' Membership Type'">Submit</button>
+                th:text="${mode == 'create' ? 'Create' : 'Update'} + ' Ticket'">Submit</button>
       </div>
     </form>
   </section>
