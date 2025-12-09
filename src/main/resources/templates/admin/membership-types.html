@@ -295,6 +295,7 @@
           <th>Price (MYR)</th>
           <th>Discount Rate</th>
           <th>Duration</th>
+          <th>Tier Level</th>
           <th>Order</th>
           <th>Status</th>
           <th>Actions</th>
@@ -308,6 +309,7 @@
           <td th:text="'RM ' + ${type.price}">RM 99.00</td>
           <td th:text="${type.discountRate * 100} + '%'">5%</td>
           <td th:text="${type.durationMonths} + ' months'">12 months</td>
+          <td th:text="${type.tierLevel}">1</td>
           <td th:text="${type.displayOrder}">1</td>
           <td>
             <span th:if="${type.active}" class="badge badge-active">Active</span>

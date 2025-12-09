@@ -228,7 +228,7 @@
           <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
           <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
         </svg>
-        Users
+        Customers
       </a>
       <a href="/staff/manage" class="menu-item">
         <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -270,9 +270,9 @@
 <main class="main-content">
   <section class="card">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h2 style="margin:0;">Users</h2>
+      <h2 style="margin:0;">Customers</h2>
       <a href="/admin/users/create" class="btn btn-primary">
-        + Create New User
+        + Create New Customer
       </a>
     </div>
 
@@ -285,17 +285,37 @@
           <th>ID</th>
           <th>Email</th>
           <th>Member Status</th>
+          <th>Membership Type</th>
           <th>Created</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr th:each="u : ${users}">
+        <tr th:each="u : ${userList}">
           <td th:text="${u.id}">1</td>
           <td th:text="${u.email}">user@example.com</td>
           <td>
-            <span th:if="${u.member}" class="badge badge-active">Member</span>
-            <span th:unless="${u.member}" class="badge badge-inactive">Non-member</span>
+            <span th:if="${userMembershipMap.containsKey(u.id)}" class="badge badge-active">Member</span>
+            <span th:unless="${userMembershipMap.containsKey(u.id)}" class="badge badge-inactive">Non-member</span>
+          </td>
+          <td>
+            <th:block th:if="${userMembershipMap.containsKey(u.id)}">
+              <th:block th:with="membership=${userMembershipMap.get(u.id)}">
+                <span th:if="${#strings.toUpperCase(membership.membershipType.name) == 'SILVER'}"
+                      class="badge badge-silver"
+                      th:text="${membership.membershipType.displayName}">Silver</span>
+                <span th:if="${#strings.toUpperCase(membership.membershipType.name) == 'GOLD'}"
+                      class="badge badge-gold"
+                      th:text="${membership.membershipType.displayName}">Gold</span>
+                <span th:if="${#strings.toUpperCase(membership.membershipType.name) == 'PLATINUM'}"
+                      class="badge badge-platinum"
+                      th:text="${membership.membershipType.displayName}">Platinum</span>
+                <span th:unless="${#strings.toUpperCase(membership.membershipType.name) == 'SILVER' or #strings.toUpperCase(membership.membershipType.name) == 'GOLD' or #strings.toUpperCase(membership.membershipType.name) == 'PLATINUM'}"
+                      class="badge badge-active"
+                      th:text="${membership.membershipType.displayName}">Custom</span>
+              </th:block>
+            </th:block>
+            <span th:unless="${userMembershipMap.containsKey(u.id)}" style="color: #9ca3af;">-</span>
           </td>
           <td th:text="${#temporals.format(u.createdAt, 'yyyy-MM-dd')}">2024-01-01</td>
           <td>
@@ -329,8 +349,8 @@
             </div>
           </td>
         </tr>
-        <tr th:if="${#lists.isEmpty(users)}">
-          <td colspan="5" style="text-align: center; padding: 40px; color: #9ca3af;">
+        <tr th:if="${#lists.isEmpty(userList)}">
+          <td colspan="6" style="text-align: center; padding: 40px; color: #9ca3af;">
             No users found. Create one to get started!
           </td>
         </tr>

@@ -17,6 +17,45 @@
       Here are your account details.
     </p>
 
+    <!-- Show Current Membership if exists -->
+    <div th:if="${currentMembership != null}" style="margin-top: 24px; margin-bottom: 24px; padding: 20px; background: linear-gradient(135deg, #697cd4 0%, #a371d4 100%); border-radius: 12px; color: white;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+        <span style="font-size: 32px;">💎</span>
+        <div style="flex: 1;">
+          <div style="font-size: 14px; opacity: 0.9;">Your Current Membership</div>
+          <div style="font-size: 24px; font-weight: 700;" th:text="${currentMembership.membershipType.displayName}">Gold</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 14px; opacity: 0.9;">Discount Rate</div>
+          <div style="font-size: 28px; font-weight: 800;" th:text="${currentMembership.discountRate * 100} + '%'">10%</div>
+        </div>
+      </div>
+      <div style="font-size: 14px; opacity: 0.9;">
+        Valid until: <span th:text="${#temporals.format(currentMembership.expiryDate, 'dd MMM yyyy')}">31 Dec 2025</span>
+      </div>
+      <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.3); font-size: 13px; opacity: 0.85;">
+        💡 You can upgrade to a higher tier at any time!
+      </div>
+    </div>
+
+    <!-- Show message if no membership -->
+    <div th:if="${currentMembership == null}" style="margin-top: 24px; margin-bottom: 24px; padding: 20px; background: var(--primary-soft); border-left: 4px solid var(--primary); border-radius: 8px;">
+      <div style="font-size: 16px; font-weight: 600; color: var(--primary); margin-bottom: 8px;">
+        🎫 Get a Membership
+      </div>
+      <p style="margin: 0; font-size: 14px; color: var(--text); line-height: 1.6;">
+        You don't have an active membership yet. Purchase a membership to enjoy exclusive discounts and benefits!
+      </p>
+      <a href="/membership" class="btn btn-primary" style="margin-top: 12px; display: inline-flex; align-items: center; gap: 8px;">
+        <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="16"></line>
+          <line x1="8" y1="12" x2="16" y2="12"></line>
+        </svg>
+        View Membership Plans
+      </a>
+    </div>
+
     <table class="table" style="margin-top:16px;">
       <tr>
         <td class="muted">Email</td>
@@ -25,8 +64,13 @@
       <tr>
         <td class="muted">Member Status</td>
         <td class="right">
-          <span th:text="${user.member} ? 'Member' : 'Non-member'">Member</span>
+          <span th:if="${currentMembership != null}" style="color: var(--success); font-weight: 600;">Active Member</span>
+          <span th:if="${currentMembership == null}" style="color: var(--muted);">Non-member</span>
         </td>
+      </tr>
+      <tr th:if="${currentMembership != null}">
+        <td class="muted">Membership ID</td>
+        <td class="right" style="font-family: monospace; font-weight: 600;" th:text="${currentMembership.membershipId}">MEM-A1B2C3D4</td>
       </tr>
     </table>
 
