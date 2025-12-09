@@ -72,8 +72,11 @@ public class AuthController {
                 session.setAttribute("isStaff", true);
                 session.setAttribute("isBoss", staff.isBoss());
 
-                // All staff (including boss) go to admin dashboard
-                return "redirect:/admin/dashboard";
+                if (staff.isBoss()) {
+                    return "redirect:/staff/manage";   // boss -> manage staff
+                } else {
+                    return "redirect:/staff";          // normal staff -> staff home
+                }
 
             } catch (IllegalArgumentException ex) {
                 model.addAttribute("error", ex.getMessage());

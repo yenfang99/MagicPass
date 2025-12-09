@@ -18,59 +18,58 @@ public class StaffManagementController {
         this.staffService = staffService;
     }
 
-    // ---- Manage Staff (staff only, both boss and regular staff) ----
+    // ---- helper: boss check (ONLY for main page + delete) ----
+    private boolean isBoss(HttpSession session) {
+        Boolean bossFlag = (Boolean) session.getAttribute("isBoss");
+        return Boolean.TRUE.equals(bossFlag);
+    }
+
+    // ---- Manage Staff (boss only) ----
     @GetMapping("/staff/manage")
     public String manageStaff(HttpSession session, Model model) {
-        // Check if user is logged in as staff
-        Boolean isStaff = (Boolean) session.getAttribute("isStaff");
-        if (isStaff == null || !isStaff) {
-            return "redirect:/login";
+        if (!isBoss(session)) {
+            return "login";           // or "redirect:/login"
         }
-
         model.addAttribute("staffList", staffService.getAllStaff());
-        return "admin/managestaff";         // admin/managestaff.html
+        return "managestaff";         // managestaff.html
     }
 
-    // ---- Add Staff page (staff only) ----
+    // ---- Add Staff page (NO boss/staff check) ----
     @GetMapping("/staff/manage/add")
-    public String showAddStaffPage(HttpSession session) {
-        // Check if user is logged in as staff
-        Boolean isStaff = (Boolean) session.getAttribute("isStaff");
-        if (isStaff == null || !isStaff) {
-            return "redirect:/login";
-        }
-        return "admin/addstaff";            // admin/addstaff.html
+    public String showAddStaffPage() {
+        // no session checks here on purpose
+        return "addstaff";            // addstaff.html
     }
 
-    // ---- Handle Add Staff form (staff only) ----
-    @PostMapping("/staff/manage/add")
-    public String addStaff(@RequestParam String email,
-                           @RequestParam String password,
-                           HttpSession session,
-                           org.springframework.ui.Model model,
-                           RedirectAttributes ra) {
+    // ---- Handle Add Staff form (NO boss/staff check) ----
+   @PostMapping("/staff/manage/add")
+public String addStaff(@RequestParam String email,
+                       @RequestParam String password,
+                       HttpSession session,
+                       org.springframework.ui.Model model,
+                       RedirectAttributes ra) {
 
-        // Check if user is logged in as staff
-        Boolean isStaff = (Boolean) session.getAttribute("isStaff");
-        if (isStaff == null || !isStaff) {
-            return "redirect:/login";
-        }
+    // (optional) if you still want to guard by boss:
+    // Boolean isBoss = (Boolean) session.getAttribute("isBoss");
+    // if (isBoss == null || !isBoss) {
+    //     return "redirect:/login";
+    // }
 
-        try {
-            staffService.createStaff(email, password);
+    try {
+        staffService.createStaff(email, password);
 
-            // success → go back to Manage Staff
-            ra.addFlashAttribute("success", "Staff account created successfully.");
-            return "redirect:/staff/manage";
+        // success → go back to Manage Staff
+        ra.addFlashAttribute("success", "Staff account created successfully.");
+        return "redirect:/staff/manage";
 
-        } catch (IllegalArgumentException ex) {
-            // validation error → stay on Add Staff page
-            model.addAttribute("error", ex.getMessage());
-            // keep the values user typed (optional)
-            model.addAttribute("email", email);
-            return "admin/addstaff";   // this renders admin/addstaff.html again
-        }
+    } catch (IllegalArgumentException ex) {
+        // validation error → stay on Add Staff page
+        model.addAttribute("error", ex.getMessage());
+        // keep the values user typed (optional)
+        model.addAttribute("email", email);
+        return "addstaff";   // this renders addstaff.html again
     }
+}
 
     // ---- Delete Staff (keep boss check – deleting is dangerous) ----
     @PostMapping("/staff/manage/delete")
