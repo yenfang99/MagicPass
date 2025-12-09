@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
-  <title>Add Staff</title>
+  <title th:text="${mode == 'create' ? 'Create' : 'Edit'} + ' User'">User Form</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <style>
     body {
@@ -108,55 +108,44 @@
 </head>
 <body>
 
-  <div th:replace="~{admin/fragments/admin-sidebar :: sidebar(activeTab='staff')}"></div>
+  <div th:replace="~{admin/fragments/admin-sidebar :: sidebar(activeTab='users')}"></div>
 
 <!-- Main Content -->
 <main class="main-content">
   <section class="card">
-    <h2 style="margin-top:0;">Create New Staff Account</h2>
-    <p class="muted" style="margin-top:6px;">
-      Staff accounts must use the <b>@magicpass.my</b> domain and will be able to log in
-      through the same login page as normal users.
-    </p>
+    <h2 style="margin-top:0;" th:text="${mode == 'create' ? 'Create New' : 'Edit'} + ' User'">Form</h2>
 
-    <!-- error / success messages -->
     <div th:if="${error}" class="alert" th:text="${error}"></div>
-    <div th:if="${success}"
-         class="alert"
-         style="border-color:rgba(22,163,74,.35);
-                background:rgba(22,163,74,.12);
-                color:#bbf7d0;"
-         th:text="${success}"></div>
 
-    <form th:action="@{/staff/manage/add}" method="post" class="grid">
+    <form th:action="${mode == 'create' ? '/admin/users/create' : '/admin/users/edit/' + user.id}"
+          th:object="${user}"
+          method="post">
 
-      <!-- field 1: EMAIL (own .field block) -->
       <div class="field">
-        <div class="label">Staff Email (@magicpass.my)</div>
-        <input class="input"
-               type="email"
-               name="email"
-               placeholder="staff1@magicpass.my"
-               th:value="${email}"
-               required>
+        <label class="label" for="email">Email *</label>
+        <input class="input" type="email" id="email" th:field="*{email}"
+               placeholder="user@example.com" required/>
       </div>
 
-      <!-- field 2: PASSWORD (separate .field block) -->
       <div class="field">
-        <div class="label">Password</div>
-        <input class="input"
-               type="password"
-               name="password"
-               minlength="8"
-               required>
-        <div class="hint">
-          At least 8 characters and one special symbol (e.g. ! @ #).
-        </div>
+        <label class="label" for="passwordHash">Password *</label>
+        <input class="input" type="password" id="passwordHash" th:field="*{passwordHash}"
+               placeholder="Enter password" required/>
+        <div class="hint" th:unless="${mode == 'create'}">Leave blank to keep current password.</div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="member">Member Status *</label>
+        <select class="input" id="member" th:field="*{member}" required>
+          <option th:value="true">Member</option>
+          <option th:value="false">Non-member</option>
+        </select>
       </div>
 
       <div class="actions">
-        <button class="btn btn-primary" type="submit">Create Staff</button>
-        <a class="btn btn-outline" th:href="@{/staff/manage}">Cancel</a>
+        <a class="btn btn-outline" href="/admin/users">Cancel</a>
+        <button class="btn btn-primary" type="submit"
+                th:text="${mode == 'create' ? 'Create' : 'Update'} + ' User'">Submit</button>
       </div>
     </form>
   </section>

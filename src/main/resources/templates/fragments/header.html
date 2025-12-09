@@ -34,9 +34,14 @@
 
       <!-- Show user info and logout when logged in -->
       <th:block th:if="${session.currentUser != null}">
-        <span class="user-info" th:text="${session.currentUser.email}">user@example.com</span>
-        <a class="nav-link logout-link" href="/logout">Logout</a>
-      </th:block>
+  <a class="user-info"
+     th:href="@{/user/profile}"
+     th:text="${session.currentUser.email}">
+    user@example.com
+  </a>
+  <a class="nav-link logout-link" href="/logout">Logout</a>
+</th:block>
+
     </nav>
   </div>
 </header>
@@ -168,16 +173,18 @@
   }
 
   .user-info {
-    display: flex;
-    align-items: center;
-    padding: 10px 18px;
-    border-radius: 12px;
-    background: var(--primary-soft);
-    color: var(--primary);
-    font-weight: 600;
-    font-size: 14px;
-    border: 2px solid transparent;
-  }
+  display: flex;
+  align-items: center;
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 14px;
+  border: 2px solid transparent;
+  text-decoration: none;   /* IMPORTANT: remove underline */
+  cursor: pointer;         /* Show clickable cursor */
+}
 
   .logout-link {
     background: rgba(239,68,68,0.1);
