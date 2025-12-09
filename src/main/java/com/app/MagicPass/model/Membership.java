@@ -17,9 +17,9 @@ public class Membership {
     @Column(name = "customer_id", nullable = false)
     private Long userId;  // References users.id from your existing users table
 
-    // Stores the membership type name (e.g., GOLD). Used to resolve to membership_types dynamically.
-    @Column(nullable = false)
-    private String tier;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "membership_type_id", nullable = false)
+    private MembershipType membershipType;
 
     @Column(nullable = false)
     private Double price;
@@ -55,8 +55,8 @@ public class Membership {
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
 
-    public String getTier() { return tier; }
-    public void setTier(String tier) { this.tier = tier; }
+    public MembershipType getMembershipType() { return membershipType; }
+    public void setMembershipType(MembershipType membershipType) { this.membershipType = membershipType; }
 
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }
@@ -75,6 +75,7 @@ public class Membership {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
 
+    // Enums
     public enum MembershipStatus {
         ACTIVE,
         EXPIRED,

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Membership Activated - MagicPass</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+
+  <!-- Include Header Styles -->
+  <th:block th:replace="~{fragments/header :: header-styles}"></th:block>
+
+  <style>
+    .confirmation-container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .success-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      animation: scaleIn 0.5s ease-out;
+    }
+
+    @keyframes scaleIn {
+      0% {
+        transform: scale(0);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.1);
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .success-icon svg {
+      width: 48px;
+      height: 48px;
+      stroke: white;
+      stroke-width: 3;
+    }
+
+    .success-header h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .success-header p {
+      margin: 0;
+      font-size: 16px;
+      color: var(--muted);
+    }
+
+    .confirmation-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(15,23,42,.08);
+    }
+
+    .membership-banner {
+      background: linear-gradient(135deg, var(--primary) 0%, #1d4ed8 100%);
+      padding: 32px 40px;
+      text-align: center;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .membership-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.4;
+    }
+
+    .membership-tier {
+      font-size: 28px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      opacity: 0.9;
+      position: relative;
+    }
+
+    .membership-id-display {
+      font-size: 28px;
+      font-weight: 800;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+      margin: 16px 0;
+      position: relative;
+    }
+
+    .membership-validity {
+      font-size: 13px;
+      opacity: 0.85;
+      position: relative;
+    }
+
+    .details-section {
+      padding: 32px 40px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .detail-item {
+      padding: 16px;
+      background: var(--background);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .detail-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .detail-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .benefits-box {
+      background: var(--background);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+
+    .benefits-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .benefits-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .benefits-list li {
+      padding: 10px 0;
+      padding-left: 28px;
+      position: relative;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.6;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .benefits-list li:last-child {
+      border-bottom: none;
+    }
+
+    .benefits-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .next-steps {
+      background: var(--primary-soft);
+      border-left: 4px solid var(--primary);
+      padding: 20px 24px;
+      border-radius: 8px;
+      margin-bottom: 28px;
+    }
+
+    .next-steps-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 0 0 12px;
+    }
+
+    .next-steps p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    @media (max-width: 640px) {
+      .detail-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .membership-banner {
+        padding: 24px 20px;
+      }
+
+      .details-section {
+        padding: 24px 20px;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .action-buttons .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Include Header Fragment -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container">
+  <div class="confirmation-container">
+
+    <!-- Success Header -->
+    <div class="success-header">
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <h1>Membership Activated!</h1>
+      <p>Welcome to the MagicPass family</p>
+    </div>
+
+    <!-- Confirmation Card -->
+    <div class="confirmation-card">
+
+      <!-- Membership Banner -->
+      <div class="membership-banner">
+        <div class="membership-tier" th:text="${tier} + ' MEMBERSHIP'">GOLD MEMBERSHIP</div>
+        <div class="membership-id-display" th:text="${membershipId}">MEM-A1B2C3D4</div>
+        <div class="membership-validity">
+          Valid from <span th:text="${#temporals.format(startDate, 'MMM dd, yyyy')}">Jan 01, 2024</span>
+          to <span th:text="${#temporals.format(expiryDate, 'MMM dd, yyyy')}">Dec 31, 2024</span>
+        </div>
+      </div>
+
+      <!-- Details Section -->
+      <div class="details-section">
+
+        <!-- Detail Grid -->
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-label">Discount Rate</div>
+            <div class="detail-value" th:text="${discountRate} + '%'">10%</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Membership Fee</div>
+            <div class="detail-value" th:text="'RM ' + ${#numbers.formatDecimal(price, 1, 2)}">RM 399.00</div>
+          </div>
+        </div>
+
+        <!-- Benefits Box -->
+        <div class="benefits-box">
+          <h3 class="benefits-title">
+            <svg style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+              <path d="M2 17l10 5 10-5"></path>
+              <path d="M2 12l10 5 10-5"></path>
+            </svg>
+            Your Membership Benefits
+          </h3>
+          <ul class="benefits-list">
+            <!-- Display benefits from the processed list -->
+            <th:block th:if="${benefitsList != null and !#lists.isEmpty(benefitsList)}">
+              <li th:each="benefit : ${benefitsList}" th:text="${benefit}">Benefit item</li>
+            </th:block>
+
+            <!-- Fallback: If no benefits, show default benefits -->
+            <th:block th:if="${benefitsList == null or #lists.isEmpty(benefitsList)}">
+              <li><span th:text="${discountRate} + '% discount on all ticket purchases'">10% discount on all ticket purchases</span></li>
+              <li>Priority access to new attractions and special events</li>
+              <li>Exclusive member-only promotions and offers</li>
+              <li>Fast-track entry during peak hours</li>
+              <li>Birthday month special discount</li>
+              <li>Free parking on weekdays</li>
+            </th:block>
+          </ul>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <a class="btn btn-primary" href="/tickets">
+            <svg style="width: 18px; height: 18px; margin-right: 8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 7v4a1 1 0 0 0 1 1h3"></path>
+              <path d="M7 7v10"></path>
+              <path d="M10 8v8a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1z"></path>
+              <path d="M17 7v4a1 1 0 0 1-1 1h-3"></path>
+              <path d="M17 7v10"></path>
+            </svg>
+            Purchase Tickets Now
+          </a>
+          <a class="btn btn-outline" href="/">Back to Home</a>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

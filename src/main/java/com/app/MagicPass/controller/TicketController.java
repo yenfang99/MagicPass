@@ -9,8 +9,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.app.MagicPass.dto.CheckoutRequest;
 import com.app.MagicPass.dto.PricingBreakdown;
+import com.app.MagicPass.model.User;
 import com.app.MagicPass.service.DatePolicyService;
-import com.app.MagicPass.service.MembershipService;
 import com.app.MagicPass.service.PricingService;
 
 import jakarta.servlet.http.HttpSession;
@@ -20,42 +20,27 @@ public class TicketController {
 
     private final PricingService pricingService;
     private final DatePolicyService datePolicyService;
-    private final MembershipService membershipService;
 
-    public TicketController(PricingService pricingService,
-                            DatePolicyService datePolicyService,
-                            MembershipService membershipService) {
+    public TicketController(PricingService pricingService, DatePolicyService datePolicyService) {
         this.pricingService = pricingService;
         this.datePolicyService = datePolicyService;
-        this.membershipService = membershipService;
     }
 
     @GetMapping("/tickets")
-<<<<<<< Updated upstream
-    public String tickets(Model model) {
-        CheckoutRequest req = new CheckoutRequest();
-        req.setReservationDate(LocalDate.now());
-=======
-    public String tickets(HttpSession session, Model model, RedirectAttributes ra) {
+    public String tickets(HttpSession session, Model model) {
         // Get current user from session
         User currentUser = (User) session.getAttribute("currentUser");
 
-        if (currentUser == null) {
-            ra.addFlashAttribute("error", "Please log in to purchase tickets.");
-            return "redirect:/login";
+        CheckoutRequest req = new CheckoutRequest();
+        req.setReservationDate(LocalDate.now());
+
+        // Set userId from session if logged in
+        if (currentUser != null) {
+            req.setUserId(currentUser.getId());  // Set userId for membership discount lookup
         }
 
-        CheckoutRequest req = (CheckoutRequest) session.getAttribute("previewReq");
-        if (req == null) {
-            req = new CheckoutRequest();
-            req.setReservationDate(LocalDate.now());
-        }
-
-        // Set/refresh userId from session if logged in
-        req.setUserId(currentUser.getId());  // Set userId for membership discount lookup
-
->>>>>>> Stashed changes
         model.addAttribute("req", req);
+        model.addAttribute("currentUser", currentUser);
         return "tickets";
     }
 
@@ -63,12 +48,6 @@ public class TicketController {
     public String preview(@ModelAttribute("req") CheckoutRequest req,
                           HttpSession session,
                           RedirectAttributes ra) {
-
-        User currentUser = (User) session.getAttribute("currentUser");
-        if (currentUser == null) {
-            ra.addFlashAttribute("error", "Please log in to purchase tickets.");
-            return "redirect:/login";
-        }
 
         int totalQty = req.getAdultQty() + req.getStudentQty() + req.getChildQty();
         if (totalQty <= 0) {
@@ -86,11 +65,7 @@ public class TicketController {
             return "redirect:/tickets";
         }
 
-        // Enforce the purchaser's user id from session
-        req.setUserId(currentUser.getId());
-
-        boolean isMember = membershipService.getActiveMembershipWithActiveType(currentUser.getId()) != null;
-        PricingBreakdown pricing = pricingService.calculate(req, isMember);
+        PricingBreakdown pricing = pricingService.calculate(req, false);
 
         // store in session
         session.setAttribute("previewReq", req);

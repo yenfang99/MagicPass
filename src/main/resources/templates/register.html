@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Create Account</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+
+  <!-- Include Header Styles -->
+  <th:block th:replace="~{fragments/header :: header-styles}"></th:block>
+</head>
+<body>
+  
+  <!-- Include Header Fragment -->
+  <div th:replace="~{fragments/header :: header}"></div>
+
+
+<main class="container">
+  <section class="card">
+    <h2 style="margin-top:0;">Create your MagicPass account</h2>
+    <p class="muted" style="margin-top:6px;">
+      Register with your email and password to purchase tickets as a member.
+    </p>
+
+    <!-- error message -->
+    <div th:if="${error}" class="alert" th:text="${error}"></div>
+
+    <!-- success message (rare here, mostly on login page) -->
+    <div th:if="${success}"
+         class="alert"
+         style="border-color:rgba(22,163,74,.35);
+                background:rgba(22,163,74,.12);
+                color:#bbf7d0;"
+         th:text="${success}"></div>
+
+    <form method="post" action="/register" class="grid">
+      <div class="field">
+        <div class="label">Email</div>
+        <input class="input"
+               type="email"
+               name="email"
+               placeholder="you@example.com"
+               required>
+      </div>
+
+      <div class="field">
+  <div class="label">Password</div>
+  <input class="input"
+         id="password"
+         type="password"
+         name="password"
+         minlength="8"
+         required>
+  <div class="hint">At least 8 characters and one special symbol (e.g. ! @ #).</div>
+</div>
+
+<div class="field">
+  <div class="label">Confirm Password</div>
+  <input class="input"
+         id="confirmPassword"
+         type="password"
+         name="confirmPassword"
+         minlength="8"
+         required>
+</div>
+
+
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">Register</button>
+        <a href="/login" class="btn btn-outline">Already have account? Login</a>
+      </div>
+    </form>
+  </section>
+</main>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const passwordInput = document.getElementById('password');
+  const confirmInput  = document.getElementById('confirmPassword');
+
+  if (!passwordInput || !confirmInput) {
+    return;
+  }
+
+  const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+
+  function updatePasswordState() {
+    const value = passwordInput.value;
+    const isValid = value.length >= 8 && specialCharRegex.test(value);
+
+    passwordInput.classList.remove('is-valid', 'is-invalid');
+
+    if (value.length === 0) {
+      return; // nothing typed → keep normal blue
+    }
+
+    passwordInput.classList.add(isValid ? 'is-valid' : 'is-invalid');
+  }
+
+  function updateConfirmState() {
+    const value = confirmInput.value;
+    const match = value.length > 0 && value === passwordInput.value;
+
+    confirmInput.classList.remove('is-valid', 'is-invalid');
+
+    if (value.length === 0) {
+      return;
+    }
+
+    confirmInput.classList.add(match ? 'is-valid' : 'is-invalid');
+  }
+
+  // typing
+  passwordInput.addEventListener('input', function () {
+    updatePasswordState();
+    if (confirmInput.value.length > 0) {
+      updateConfirmState();
+    }
+  });
+
+  confirmInput.addEventListener('input', updateConfirmState);
+
+  // blur → back to normal blue
+  passwordInput.addEventListener('blur', function () {
+    passwordInput.classList.remove('is-valid', 'is-invalid');
+  });
+  confirmInput.addEventListener('blur', function () {
+    confirmInput.classList.remove('is-valid', 'is-invalid');
+  });
+});
+</script>
+
+</body>
+</html>
+  <!-- Include Header Fragment -->
+  <div th:replace="~{fragments/header :: header}"></div>
+
+<main class="container">
+  <section class="card">
+    <h2 style="margin-top:0;">Payment Successful</h2>
+    <p class="muted" style="margin-top:6px;">Thank you. Here is your receipt.</p>
+
+    <table class="table" style="margin-top:14px;">
+      <tr>
+        <td class="muted">Order ID</td>
+        <td class="right bold" th:text="${order.orderCode}">1</td>
+      </tr>
+      <tr>
+        <td class="muted">Reservation Date</td>
+        <td class="right" th:text="${#temporals.format(order.reservationDate, 'dd/MM/yyyy')}">07/12/2025</td>
+      </tr>
+      <tr>
+        <td class="muted">Payment Method</td>
+        <td class="right" th:text="${order.paymentMethod}">CARD</td>
+      </tr>
+      <tr>
+        <td class="muted">Status</td>
+        <td class="right" th:text="${order.status}">PAID</td>
+      </tr>
+    </table>
+
+    <h3 style="margin-top:18px; margin-bottom:10px;">Order Details</h3>
+
+  <table class="table">
+    <tr th:if="${order.adultQty > 0}">
+      <td class="muted">Adult (RM 370) × <b th:text="${order.adultQty}">0</b></td>
+      <td class="right"
+          th:text="${#numbers.formatDecimal(order.adultQty * 370.0, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
+
+    <tr th:if="${order.studentQty > 0}">
+      <td class="muted">Student (RM 320) × <b th:text="${order.studentQty}">0</b></td>
+      <td class="right"
+          th:text="${#numbers.formatDecimal(order.studentQty * 320.0, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
+
+    <tr th:if="${order.childQty > 0}">
+      <td class="muted">Children (RM 250) × <b th:text="${order.childQty}">0</b></td>
+      <td class="right"
+          th:text="${#numbers.formatDecimal(order.childQty * 250.0, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
+
+    <tr>
+      <td class="muted">Total</td>
+      <td class="right" th:text="${#numbers.formatDecimal(order.total, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
+    <tr>
+      <td class="muted">Discount</td>
+      <td class="right" th:text="${#numbers.formatDecimal(order.discount, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
+    <tr>
+      <td class="muted">Tax (6%)</td>
+      <td class="right" th:text="${#numbers.formatDecimal(order.tax, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
+    <tr>
+      <td class="bold">Grand Total</td>
+      <td class="right bold" th:text="${#numbers.formatDecimal(order.grandTotal, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
+  </table>
+
+
+    <div class="actions" style="margin-top:16px;">
+      <a class="btn btn-outline" href="/tickets">Buy Another Ticket</a>
+      <button class="btn btn-primary" onclick="window.print()">Print</button>
+    </div>
+  </section>
+</main>
+
+</body>
+</html>

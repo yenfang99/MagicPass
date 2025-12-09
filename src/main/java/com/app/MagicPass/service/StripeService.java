@@ -1,6 +1,5 @@
 package com.app.MagicPass.service;
 
-import com.app.MagicPass.model.MembershipType;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -21,13 +20,21 @@ public class StripeService {
      * Create a Stripe Checkout Session for membership purchase
      */
     public Session createCheckoutSession(
-            MembershipType membershipType,
+            String tierName,
+            Double price,
             Long userId,
+            Long membershipTypeId,
+            Integer durationMonths,
             String successUrl,
             String cancelUrl) throws StripeException {
 
         // Convert price to cents (Stripe uses smallest currency unit)
-        long priceInCents = (long) (membershipType.getPrice() * 100);
+        long priceInCents = (long) (price * 100);
+
+        // Build description based on duration
+        String durationDescription = durationMonths == 12
+            ? "1 year membership with exclusive benefits"
+            : durationMonths + " months membership with exclusive benefits";
 
         SessionCreateParams params = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
@@ -42,8 +49,8 @@ public class StripeService {
                                                 .setUnitAmount(priceInCents)
                                                 .setProductData(
                                                         SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                                                .setName("MagicPass " + membershipType.getDisplayName() + " Membership")
-                                                                .setDescription(membershipType.getDurationMonths() + " month membership with exclusive benefits")
+                                                                .setName("MagicPass " + tierName + " Membership")
+                                                                .setDescription(durationDescription)
                                                                 .build()
                                                 )
                                                 .build()
@@ -56,7 +63,7 @@ public class StripeService {
                 .addPaymentMethodType(SessionCreateParams.PaymentMethodType.GRABPAY)  // GrabPay e-wallet
                 // Store metadata to retrieve later
                 .putMetadata("userId", userId.toString())
-                .putMetadata("membershipTypeId", membershipType.getId().toString())
+                .putMetadata("membershipTypeId", membershipTypeId.toString())
                 .build();
 
         return Session.create(params);
@@ -106,7 +113,6 @@ public class StripeService {
                 .addPaymentMethodType(SessionCreateParams.PaymentMethodType.GRABPAY)
                 // Store metadata
                 .putMetadata("type", "TICKET_PURCHASE")
-                .putMetadata("userId", req.getUserId() != null ? req.getUserId().toString() : "anonymous")
                 .putMetadata("adultQty", String.valueOf(req.getAdultQty()))
                 .putMetadata("studentQty", String.valueOf(req.getStudentQty()))
                 .putMetadata("childQty", String.valueOf(req.getChildQty()))
