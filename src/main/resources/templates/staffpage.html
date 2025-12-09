@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Staff Dashboard</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      MagicPass
+      <small>Staff Dashboard</small>
+    </div>
+    <a class="btn btn-outline" href="/">Home</a>
+    <a class="btn btn-outline" href="/logout">Logout</a>
+  </div>
+</header>
+
+<main class="container">
+  <section class="card">
+    <h2>Welcome, Staff</h2>
+    <p class="muted">This is the staff-only area of MagicPass.</p>
+    <!-- later you can put order list, reports, etc. here -->
+  </section>
+</main>
+
+</body>
+</html>

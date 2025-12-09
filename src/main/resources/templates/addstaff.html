@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Add Staff</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <style>
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: var(--primary-soft);
+      color: var(--primary2);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      MagicPass
+      <small>Add Staff Account</small>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span class="badge">Boss</span>
+      <a class="btn btn-outline" th:href="@{/staff/manage}">Manage Staff</a>
+<a class="btn btn-outline" th:href="@{/staff}">Staff Home</a>
+<a class="btn btn-outline" th:href="@{/logout}">Logout</a>
+
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <section class="card">
+    <h2 style="margin-top:0;">Create New Staff Account</h2>
+    <p class="muted" style="margin-top:6px;">
+      Staff accounts must use the <b>@magicpass.my</b> domain and will be able to log in
+      through the same login page as normal users.
+    </p>
+
+    <!-- error / success messages -->
+    <div th:if="${error}" class="alert" th:text="${error}"></div>
+    <div th:if="${success}"
+         class="alert"
+         style="border-color:rgba(22,163,74,.35);
+                background:rgba(22,163,74,.12);
+                color:#bbf7d0;"
+         th:text="${success}"></div>
+
+    <form th:action="@{/staff/manage/add}" method="post" class="grid">
+
+      <!-- field 1: EMAIL (own .field block) -->
+      <div class="field">
+        <div class="label">Staff Email (@magicpass.my)</div>
+        <input class="input"
+               type="email"
+               name="email"
+               placeholder="staff1@magicpass.my"
+               th:value="${email}"
+               required>
+      </div> <!-- <- IMPORTANT closing div for this field -->
+
+      <!-- field 2: PASSWORD (separate .field block) -->
+      <div class="field">
+        <div class="label">Password</div>
+        <input class="input"
+               type="password"
+               name="password"
+               minlength="8"
+               required>
+        <div class="hint">
+          At least 8 characters and one special symbol (e.g. ! @ #).
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Create Staff</button>
+        <a class="btn btn-outline" th:href="@{/staff/manage}">Cancel</a>
+      </div>
+    </form>
+  </section>
+</main>
+
+</body>
+</html>

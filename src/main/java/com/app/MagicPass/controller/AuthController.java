@@ -1,7 +1,9 @@
 package com.app.MagicPass.controller;
 
+import com.app.MagicPass.model.Staff;
 import com.app.MagicPass.model.User;
 import com.app.MagicPass.service.AuthService;
+import com.app.MagicPass.service.StaffService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,16 +13,17 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final StaffService staffService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, StaffService staffService) {
         this.authService = authService;
+        this.staffService = staffService;
     }
 
-    // ---------- REGISTER ----------
-
+    // ---------- REGISTER (users only) ----------
     @GetMapping("/register")
     public String showRegister() {
-        return "register";          // shows register.html
+        return "register";
     }
 
     @PostMapping("/register")
@@ -29,7 +32,6 @@ public class AuthController {
                              @RequestParam("confirmPassword") String confirmPassword,
                              Model model) {
 
-        // confirm password check (frontend already checks, but double-check here)
         if (!password.equals(confirmPassword)) {
             model.addAttribute("error", "Passwords do not match.");
             return "register";
@@ -37,9 +39,7 @@ public class AuthController {
 
         try {
             authService.register(email, password);
-            // show login page with success message
-            model.addAttribute("success",
-                    "Registration successful. Please log in.");
+            model.addAttribute("success", "Registration successful. Please log in.");
             return "login";
         } catch (IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
@@ -47,11 +47,10 @@ public class AuthController {
         }
     }
 
-    // ---------- LOGIN ----------
-
+    // ---------- LOGIN (users + staff + boss) ----------
     @GetMapping("/login")
     public String showLogin() {
-        return "login";             // shows login.html
+        return "login";
     }
 
     @PostMapping("/login")
@@ -60,16 +59,44 @@ public class AuthController {
                           HttpSession session,
                           Model model) {
 
-        try {
-            User user = authService.login(email, password);
-            session.setAttribute("currentUser", user);
+        String normalized = email.trim().toLowerCase();
 
-            // optional message on home page
+        // ---- 1. Staff / Boss login (staff_accounts table) ----
+        if (staffService.isStaffEmail(normalized)) {
+            try {
+                Staff staff = staffService.loginStaff(normalized, password);
+
+                // store staff in session
+                session.setAttribute("currentStaff", staff);
+                session.setAttribute("currentUser", null);
+                session.setAttribute("isStaff", true);
+                session.setAttribute("isBoss", staff.isBoss());
+
+                if (staff.isBoss()) {
+                    return "redirect:/staff/manage";   // boss -> manage staff
+                } else {
+                    return "redirect:/staff";          // normal staff -> staff home
+                }
+
+            } catch (IllegalArgumentException ex) {
+                model.addAttribute("error", ex.getMessage());
+                return "login";
+            }
+        }
+
+        // ---- 2. Normal user login (users table) ----
+        try {
+            User user = authService.login(normalized, password);
+
+            session.setAttribute("currentUser", user);
+            session.setAttribute("currentStaff", null);
+            session.setAttribute("isStaff", false);
+            session.setAttribute("isBoss", false);
+
             model.addAttribute("success",
                     "Login successful. Welcome " + user.getEmail() + "!");
-
-            // DIRECTLY render home.html (NO redirect, NO /;jsessionid issue)
             return "home";
+
         } catch (IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
             return "login";
@@ -77,7 +104,6 @@ public class AuthController {
     }
 
     // ---------- LOGOUT ----------
-
     @GetMapping("/logout")
     public String logout(HttpSession session, Model model) {
         session.invalidate();

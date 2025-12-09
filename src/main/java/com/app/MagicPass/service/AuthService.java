@@ -21,36 +21,50 @@ public class AuthService {
 
     // --- REGISTER ---
     public User register(String email, String password) {
-        // basic validation
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("Email is required.");
-        }
-        if (!email.contains("@")) {
-            throw new IllegalArgumentException("Please enter a valid email.");
-        }
-        if (password == null || password.length() < 8) {
-    throw new IllegalArgumentException("Password must be at least 8 characters.");
-}
-
-// at least one special character
-boolean hasSpecial = password.matches(".*[^A-Za-z0-9].*");
-if (!hasSpecial) {
-    throw new IllegalArgumentException("Password must contain at least one special character (e.g. !,@,#).");
-}
-
-        if (userRepository.existsByEmail(email.trim().toLowerCase())) {
-            throw new IllegalArgumentException("Email is already registered.");
-        }
-
-        User u = new User();
-        u.setEmail(email.trim().toLowerCase());
-        u.setPasswordHash(hashPassword(password));
-        u.setMember(true); // all registered users are members for now
-
-        return userRepository.save(u);
+    // basic validation
+    if (email == null || email.isBlank()) {
+        throw new IllegalArgumentException("Email is required.");
     }
 
+    email = email.trim().toLowerCase();
+
+    if (!email.contains("@")) {
+        throw new IllegalArgumentException("Please enter a valid email.");
+    }
+
+    // block staff domain through public register
+    if (email.endsWith("@magicpass.my")) {
+        throw new IllegalArgumentException(
+                "Staff accounts cannot be registered here. Please contact the system administrator."
+        );
+    }
+
+    if (password == null || password.length() < 8) {
+        throw new IllegalArgumentException("Password must be at least 8 characters.");
+    }
+
+    boolean hasSpecial = password.matches(".*[^A-Za-z0-9].*");
+    if (!hasSpecial) {
+        throw new IllegalArgumentException(
+                "Password must contain at least one special character (e.g. !,@,#)."
+        );
+    }
+
+    if (userRepository.existsByEmail(email)) {
+        throw new IllegalArgumentException("Email is already registered.");
+    }
+
+    User u = new User();
+    u.setEmail(email);
+    u.setPasswordHash(hashPassword(password));
+    u.setMember(true);
+
+    return userRepository.save(u);
+}
+
+
     // --- LOGIN ---
+    
     public User login(String email, String password) {
         if (email == null || password == null) {
             throw new IllegalArgumentException("Email and password are required.");
