@@ -5,24 +5,22 @@
   <meta charset="UTF-8" />
   <title>Payment Preview</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
+  <th:block th:replace="~{fragments/header :: header-styles}"></th:block>
 </head>
 
 <body>
 
-  <header class="nav">
-    <div class="nav-inner">
-      <div class="brand">
-        Disney Ticketing
-        <small>Payment Preview</small>
-      </div>
-      <a class="btn btn-outline" th:href="@{/tickets(fromPreview=true)}">Edit</a>
-    </div>
-  </header>
+  <div th:replace="~{fragments/header :: header}"></div>
 
   <main class="container">
     <section class="card">
-      <h2 style="margin-top:0;">Payment Preview</h2>
-      <p class="muted" style="margin-top:6px;">Review the breakdown before selecting payment method.</p>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+        <div>
+          <h2 style="margin:0;">Payment Preview</h2>
+          <p class="muted" style="margin-top:4px;">Review the breakdown before selecting payment method.</p>
+        </div>
+        <a class="btn btn-outline" th:href="@{/tickets(fromPreview=true)}">Edit</a>
+      </div>
 
       <div class="summary-strip">
         <div class="summary-item">

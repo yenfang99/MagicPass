@@ -11,8 +11,6 @@
 <body>
   <!-- Include Header Fragment -->
   <div th:replace="~{fragments/header :: header}"></div>
-</head>
-<body>
 
 <!-- <header class="nav">
   <div class="nav-inner">
@@ -34,10 +32,7 @@
 
     <!-- success message (e.g. after register) -->
     <div th:if="${success}"
-         class="alert"
-         style="border-color:rgba(22,163,74,.35);
-                background:rgba(22,163,74,.12);
-                color:#bbf7d0;"
+         class="alert alert-success"
          th:text="${success}"></div>
 
     <form method="post" action="/login" class="grid">

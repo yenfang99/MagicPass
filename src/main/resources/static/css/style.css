@@ -216,15 +216,21 @@ input.is-invalid {
   flex-wrap: wrap;
 }
 
-.alert {
-  border-radius: 14px;
-  padding: 12px 14px;
-  border: 1px solid #fca5a5;
-  background: #fee2e2;
-  color: #b91c1c;
-  font-weight: 700;
-  margin-bottom: 14px;
-}
+  .alert {
+    border-radius: 14px;
+    padding: 12px 14px;
+    border: 1px solid #fca5a5;
+    background: #fee2e2;
+    color: #b91c1c;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+
+  .alert-success {
+    border-color: #22c55e;
+    background: #dcfce7;
+    color: #166534;
+  }
 
 .table {
   width: 100%;
