@@ -168,22 +168,18 @@
     .remove-col button {
       font-size: 12px;
       padding: 6px 10px;
-      border-radius: 999px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
     }
 
-    /* hide remove buttons by default */
     .remove-col .remove-btn {
-      opacity: 0;
-      pointer-events: none;
-      transform: translateY(2px);
-      transition: opacity .15s ease, transform .15s ease;
+      opacity: 0.6;
+      transition: opacity 0.2s ease, background-color 0.2s ease;
     }
 
-    /* when in removal mode, show them */
-    .table-removal-mode .remove-col .remove-btn {
+    .remove-col .remove-btn:hover {
       opacity: 1;
-      pointer-events: auto;
-      transform: translateY(0);
+      background-color: #fee2e2;
     }
 
     /* role badges */
@@ -247,9 +243,6 @@
 
         <div class="actions" style="margin-top:0;">
           <a class="btn btn-primary" th:href="@{/staff/manage/add}">Add New Staff</a>
-          <button type="button" class="btn btn-outline" id="toggleRemoveBtn">
-            Remove Staff
-          </button>
         </div>
       </div>
 
@@ -289,7 +282,7 @@
 
               <!-- Delete button for normal staff -->
               <button type="button" th:if="${!staff.boss}" class="btn btn-outline btn-sm btn-danger remove-btn"
-                th:attr="data-staff-id=${staff.id}, data-staff-email=${staff.email}" disabled>
+                th:attr="data-staff-id=${staff.id}, data-staff-email=${staff.email}">
 
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M3 6h18"></path>
@@ -346,8 +339,6 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      const staffTable = document.getElementById('staffTable');
-      const toggleBtn = document.getElementById('toggleRemoveBtn');
       const removeButtons = document.querySelectorAll('.remove-btn');
 
       const modalBackdrop = document.getElementById('confirmModal');
@@ -360,17 +351,6 @@
       const removeIdInput = document.getElementById('removeStaffId');
 
       let currentStaffId = null;
-
-      // --- toggle removal mode (show/hide buttons) ---
-      toggleBtn.addEventListener('click', function () {
-        const isOn = staffTable.classList.toggle('table-removal-mode');
-
-        removeButtons.forEach(btn => {
-          btn.disabled = !isOn;
-        });
-
-        toggleBtn.textContent = isOn ? 'Cancel Remove' : 'Remove Staff';
-      });
 
       // --- when clicking a remove button ---
       removeButtons.forEach(btn => {
