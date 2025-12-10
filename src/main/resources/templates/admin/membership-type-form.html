@@ -299,7 +299,6 @@
     </div>
 
     <div th:if="${error}" class="error-banner">
-      <span style="font-size: 18px;">⚠️</span>
       <span th:text="${error}"></span>
     </div>
 
@@ -326,7 +325,6 @@
                  placeholder="e.g., SILVER" required
                  style="font-family: monospace; font-weight: 600;"/>
           <div class="field-hint">
-            <span>💡</span>
             <span>Internal name (uppercase, no spaces)</span>
           </div>
         </div>
@@ -339,7 +337,6 @@
           <input class="enhanced-input" type="text" id="displayName" th:field="*{displayName}"
                  placeholder="e.g., Silver Membership" required/>
           <div class="field-hint">
-            <span>👀</span>
             <span>Name shown to customers</span>
           </div>
         </div>
@@ -354,7 +351,6 @@
                   placeholder="Describe the benefits of this membership tier..."
                   style="resize: vertical;"></textarea>
         <div class="field-hint">
-          <span>📄</span>
           <span>Describe membership benefits and features</span>
         </div>
       </div>
@@ -382,7 +378,6 @@
                    style="padding-left: 46px; font-weight: 600;"/>
           </div>
           <div class="field-hint">
-            <span>💵</span>
             <span>Membership purchase price</span>
           </div>
         </div>
@@ -399,7 +394,6 @@
             <span class="input-suffix">%</span>
           </div>
           <div class="field-hint">
-            <span>💡</span>
             <span>Enter as decimal (0.05 = 5%)</span>
           </div>
         </div>
@@ -416,7 +410,6 @@
             <span class="input-suffix">months</span>
           </div>
           <div class="field-hint">
-            <span>📅</span>
             <span>Membership validity period</span>
           </div>
         </div>
@@ -441,7 +434,6 @@
           <input class="enhanced-input" type="number" id="tierLevel" th:field="*{tierLevel}"
                  min="1" placeholder="1" required/>
           <div class="field-hint">
-            <span>📊</span>
             <span>Higher number = premium tier</span>
           </div>
         </div>
@@ -454,7 +446,6 @@
           <input class="enhanced-input" type="number" id="displayOrder" th:field="*{displayOrder}"
                  min="0" placeholder="0" required/>
           <div class="field-hint">
-            <span>🔢</span>
             <span>Lower numbers appear first</span>
           </div>
         </div>
@@ -465,11 +456,10 @@
             <span class="required-mark">*</span>
           </label>
           <select class="enhanced-input" id="active" th:field="*{active}" required style="cursor: pointer;">
-            <option th:value="true">✅ Active</option>
-            <option th:value="false">⏸️ Inactive</option>
+            <option th:value="true">Active</option>
+            <option th:value="false">Inactive</option>
           </select>
           <div class="field-hint">
-            <span>🔘</span>
             <span>Control membership visibility</span>
           </div>
         </div>
