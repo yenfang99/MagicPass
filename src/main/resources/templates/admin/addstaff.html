@@ -103,6 +103,185 @@
       flex: 1;
       margin-left: 260px;
       padding: 32px;
+      max-width: 100%;
+    }
+
+    .content-wrapper {
+      max-width: 95%;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Enhanced Form Styles */
+    .form-section {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .section-header {
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-description {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .form-field {
+      margin-bottom: 24px;
+    }
+
+    .form-field:last-child {
+      margin-bottom: 0;
+    }
+
+    .field-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .required-mark {
+      color: #e53e3e;
+      font-weight: 700;
+    }
+
+    .enhanced-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .enhanced-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(105, 124, 212, 0.1);
+      background: white;
+    }
+
+    .enhanced-input:hover {
+      border-color: rgb(186, 168, 235);
+    }
+
+    .field-hint {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-box {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: #1e40af;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      line-height: 1.6;
+    }
+
+    .page-header-badge {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--primary) 0%, #a371d4 100%);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 8px 16px rgba(105, 124, 212, 0.25);
+    }
+
+    .error-banner {
+      margin-bottom: 24px;
+      padding: 16px 20px;
+      background: #fee;
+      border-left: 4px solid #e53e3e;
+      border-radius: 10px;
+      color: #c53030;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .success-banner {
+      margin-bottom: 24px;
+      padding: 16px 20px;
+      background: rgba(22,163,74,.12);
+      border-left: 4px solid rgba(22,163,74,.8);
+      border-radius: 10px;
+      color: #15803d;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      padding-top: 8px;
+    }
+
+    .btn-enhanced {
+      padding: 14px 32px;
+      font-weight: 600;
+      font-size: 15px;
+      border-radius: 10px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-enhanced:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(15,23,42,.15);
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 20px;
+      }
+
+      .form-section {
+        padding: 20px;
+      }
     }
   </style>
 </head>
@@ -112,54 +291,120 @@
 
 <!-- Main Content -->
 <main class="main-content">
-  <section class="card">
-    <h2 style="margin-top:0;">Create New Staff Account</h2>
-    <p class="muted" style="margin-top:6px;">
-      Staff accounts must use the <b>@magicpass.my</b> domain and will be able to log in
-      through the same login page as normal users.
-    </p>
+  <div class="content-wrapper">
+    <!-- Page Header -->
+    <div style="margin-bottom: 36px;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div class="page-header-badge">👨‍💼</div>
+        <div>
+          <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">
+            Create New Staff Account
+          </h1>
+          <p style="margin: 6px 0 0; font-size: 15px; color: var(--muted);">Add a new staff member with admin privileges</p>
+        </div>
+      </div>
+    </div>
 
-    <!-- error / success messages -->
-    <div th:if="${error}" class="alert" th:text="${error}"></div>
-    <div th:if="${success}"
-         class="alert"
-         style="border-color:rgba(22,163,74,.35);
-                background:rgba(22,163,74,.12);
-                color:#bbf7d0;"
-         th:text="${success}"></div>
+    <div th:if="${error}" class="error-banner">
+      <svg style="width: 18px; height: 18px; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+      </svg>
+      <span th:text="${error}"></span>
+    </div>
 
-    <form th:action="@{/staff/manage/add}" method="post" class="grid">
+    <div th:if="${success}" class="success-banner">
+      <svg style="width: 18px; height: 18px; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span th:text="${success}"></span>
+    </div>
 
-      <!-- field 1: EMAIL (own .field block) -->
-      <div class="field">
-        <div class="label">Staff Email (@magicpass.my)</div>
-        <input class="input"
-               type="email"
-               name="email"
-               placeholder="staff1@magicpass.my"
-               th:value="${email}"
-               required>
+    <div class="info-box">
+      <svg style="width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+      <div>
+        <strong>Important:</strong> Staff accounts must use the <strong>@magicpass.my</strong> domain and will be able to log in through the same login page as normal users with administrative privileges.
+      </div>
+    </div>
+
+    <form th:action="@{/staff/manage/add}" method="post">
+
+    <!-- Account Information Section -->
+    <section class="form-section">
+      <div class="section-header">
+        <h3 class="section-title">
+          <span>Account Credentials</span>
+        </h3>
+        <p class="section-description">Staff login information and security settings</p>
       </div>
 
-      <!-- field 2: PASSWORD (separate .field block) -->
-      <div class="field">
-        <div class="label">Password</div>
-        <input class="input"
-               type="password"
-               name="password"
-               minlength="8"
-               required>
-        <div class="hint">
-          At least 8 characters and one special symbol (e.g. ! @ #).
+      <div class="form-field">
+        <label class="field-label" for="email">
+          <span>Staff Email</span>
+          <span class="required-mark">*</span>
+        </label>
+        <input class="enhanced-input"
+               type="email"
+               id="email"
+               name="email"
+               placeholder="staff@magicpass.my"
+               th:value="${email}"
+               required
+               pattern=".*@magicpass\.my$"
+               title="Email must end with @magicpass.my"/>
+        <div class="field-hint">
+          <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+          <span>Must use @magicpass.my domain (e.g., john@magicpass.my)</span>
         </div>
       </div>
 
-      <div class="actions">
-        <button class="btn btn-primary" type="submit">Create Staff</button>
-        <a class="btn btn-outline" th:href="@{/staff/manage}">Cancel</a>
+      <div class="form-field">
+        <label class="field-label" for="password">
+          <span>Password</span>
+          <span class="required-mark">*</span>
+        </label>
+        <input class="enhanced-input"
+               type="password"
+               id="password"
+               name="password"
+               placeholder="Enter a strong password"
+               minlength="8"
+               required/>
+        <div class="field-hint">
+          <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>At least 8 characters with one special symbol (e.g., ! @ # $ %)</span>
+        </div>
       </div>
+    </section>
+
+    <!-- Action Buttons -->
+    <div class="form-actions">
+      <a class="btn btn-outline btn-enhanced" th:href="@{/staff/manage}">
+        <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        <span>Cancel</span>
+      </a>
+      <button class="btn btn-primary btn-enhanced" type="submit">
+        <span>✨</span>
+        <span>Create Staff Account</span>
+      </button>
+    </div>
     </form>
-  </section>
+  </div>
 </main>
 
 </body>

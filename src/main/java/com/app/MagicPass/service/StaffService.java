@@ -116,8 +116,13 @@ public class StaffService {
      * Delete a staff account by id (used by boss).
      */
     public void deleteStaff(Long id) {
-        staffRepository.deleteById(id);
-    }
+    staffRepository.findById(id).ifPresent(staff -> {
+        if (staff.isBoss()) {
+            throw new IllegalArgumentException("The boss account cannot be removed.");
+        }
+        staffRepository.delete(staff);
+    });
+}
 
     /**
      * Simple SHA-256 hashing (same style as AuthService).

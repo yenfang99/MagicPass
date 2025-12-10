@@ -103,6 +103,170 @@
       flex: 1;
       margin-left: 260px;
       padding: 32px;
+      max-width: 100%;
+    }
+
+    .content-wrapper {
+      max-width: 95%;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Enhanced Form Styles */
+    .form-section {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .section-header {
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-description {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .form-field {
+      margin-bottom: 24px;
+    }
+
+    .form-field:last-child {
+      margin-bottom: 0;
+    }
+
+    .field-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .required-mark {
+      color: #e53e3e;
+      font-weight: 700;
+    }
+
+    .enhanced-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .enhanced-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(105, 124, 212, 0.1);
+      background: white;
+    }
+
+    .enhanced-input:hover {
+      border-color: rgb(186, 168, 235);
+    }
+
+    .field-hint {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-box {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-top: 8px;
+      font-size: 13px;
+      color: #1e40af;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .page-header-badge {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--primary) 0%, #a371d4 100%);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 8px 16px rgba(105, 124, 212, 0.25);
+    }
+
+    .error-banner {
+      margin-bottom: 24px;
+      padding: 16px 20px;
+      background: #fee;
+      border-left: 4px solid #e53e3e;
+      border-radius: 10px;
+      color: #c53030;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      padding-top: 8px;
+    }
+
+    .btn-enhanced {
+      padding: 14px 32px;
+      font-weight: 600;
+      font-size: 15px;
+      border-radius: 10px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-enhanced:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(15,23,42,.15);
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 20px;
+      }
+
+      .form-section {
+        padding: 20px;
+      }
     }
   </style>
 </head>
@@ -112,43 +276,125 @@
 
 <!-- Main Content -->
 <main class="main-content">
-  <section class="card">
-    <h2 style="margin-top:0;" th:text="${mode == 'create' ? 'Create New' : 'Edit'} + ' User'">Form</h2>
+  <div class="content-wrapper">
+    <!-- Page Header -->
+    <div style="margin-bottom: 36px;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div class="page-header-badge">👤</div>
+        <div>
+          <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: var(--text); letter-spacing: -0.5px;"
+              th:text="${mode == 'create' ? 'Create New User' : 'Edit User'}">Form</h1>
+          <p style="margin: 6px 0 0; font-size: 15px; color: var(--muted);">Manage customer account details and membership status</p>
+        </div>
+      </div>
+    </div>
 
-    <div th:if="${error}" class="alert" th:text="${error}"></div>
+    <div th:if="${error}" class="error-banner">
+      <span th:text="${error}"></span>
+    </div>
 
     <form th:action="${mode == 'create' ? '/admin/users/create' : '/admin/users/edit/' + user.id}"
           th:object="${user}"
           method="post">
 
-      <div class="field">
-        <label class="label" for="email">Email *</label>
-        <input class="input" type="email" id="email" th:field="*{email}"
+    <!-- Account Information Section -->
+    <section class="form-section">
+      <div class="section-header">
+        <h3 class="section-title">
+          <span>Account Information</span>
+        </h3>
+        <p class="section-description">Basic login credentials and account details</p>
+      </div>
+
+      <div class="form-field">
+        <label class="field-label" for="email">
+          <span>Email Address</span>
+          <span class="required-mark">*</span>
+        </label>
+        <input class="enhanced-input" type="email" id="email" th:field="*{email}"
                placeholder="user@example.com" required/>
+        <div class="field-hint">
+          <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>Used for login and notifications</span>
+        </div>
       </div>
 
-      <div class="field">
-        <label class="label" for="passwordHash">Password *</label>
-        <input class="input" type="password" id="passwordHash" th:field="*{passwordHash}"
-               placeholder="Enter password" required/>
-        <div class="hint" th:unless="${mode == 'create'}">Leave blank to keep current password.</div>
+      <div class="form-field">
+        <label class="field-label" for="passwordHash">
+          <span>Password</span>
+          <span class="required-mark">*</span>
+        </label>
+        <input class="enhanced-input" type="password" id="passwordHash" th:field="*{passwordHash}"
+               placeholder="Enter a secure password" required/>
+        <div class="field-hint">
+          <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>Minimum 8 characters recommended</span>
+        </div>
+        <div th:unless="${mode == 'create'}" class="info-box">
+          <svg style="width: 16px; height: 16px; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>Leave blank to keep the current password unchanged</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Membership Section -->
+    <section class="form-section">
+      <div class="section-header">
+        <h3 class="section-title">
+          <span>Membership Status</span>
+        </h3>
+        <p class="section-description">Configure user membership privileges</p>
       </div>
 
-      <div class="field">
-        <label class="label" for="member">Member Status *</label>
-        <select class="input" id="member" th:field="*{member}" required>
-          <option th:value="true">Member</option>
-          <option th:value="false">Non-member</option>
+      <div class="form-field">
+        <label class="field-label" for="member">
+          <span>Member Status</span>
+          <span class="required-mark">*</span>
+        </label>
+        <select class="enhanced-input" id="member" th:field="*{member}" required style="cursor: pointer;">
+          <option th:value="true">✓ Member</option>
+          <option th:value="false">○ Non-member</option>
         </select>
+        <div class="field-hint">
+          <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span>Members can purchase memberships and receive discounts</span>
+        </div>
       </div>
+    </section>
 
-      <div class="actions">
-        <a class="btn btn-outline" href="/admin/users">Cancel</a>
-        <button class="btn btn-primary" type="submit"
-                th:text="${mode == 'create' ? 'Create' : 'Update'} + ' User'">Submit</button>
-      </div>
+    <!-- Action Buttons -->
+    <div class="form-actions">
+      <a class="btn btn-outline btn-enhanced" href="/admin/users">
+        <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        <span>Cancel</span>
+      </a>
+      <button class="btn btn-primary btn-enhanced" type="submit">
+        <span th:if="${mode == 'create'}">✨</span>
+        <span th:if="${mode != 'create'}">💾</span>
+        <span th:text="${mode == 'create' ? 'Create User' : 'Update User'}">Submit</span>
+      </button>
+    </div>
     </form>
-  </section>
+  </div>
 </main>
 
 </body>
