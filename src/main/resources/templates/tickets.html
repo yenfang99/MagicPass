@@ -25,8 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const today = new Date();
   const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const min = new Date(today);
-  min.setDate(min.getDate() + 1); // earliest allowed is tomorrow
+  const min = new Date(today); // earliest allowed is today
   const max = new Date(today);
   max.setDate(today.getDate() + 7); // latest allowed is 7 days ahead
 
@@ -94,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <input class="input" type="text" id="reservationDateDisplay" placeholder="Select date" />
         <!-- hidden value that gets submitted to Spring (ISO) -->
         <input type="hidden" th:field="*{reservationDate}" id="reservationDateIso"/>
-        <div class="hint">Reservation is allowed from tomorrow and within the next 7 days only.</div>
+        <div class="hint">Reservation is allowed from today and within the next 7 days only.</div>
       </div>
 
 

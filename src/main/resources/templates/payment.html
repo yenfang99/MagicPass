@@ -93,27 +93,98 @@
         </div>
       </div>
 
-      <!-- Stripe Payment Integration -->
-      <form th:action="@{/payment/confirm}" method="post" style="margin-top:16px;">
-        <input type="hidden" name="paymentMethod" value="STRIPE" />
+      <!-- Payment Method Selection -->
+      <form th:action="@{/payment/confirm}" method="post" style="margin-top:16px;" id="payment-form">
+        <input type="hidden" id="grand-total" th:value="${pricing.grandTotal}" />
+        <div class="info-box" style="display:flex; gap:12px; flex-direction:column;">
+          <label style="display:flex; gap:10px; align-items:flex-start; cursor:pointer;">
+            <input id="method-stripe" type="radio" name="paymentMethod" value="STRIPE" checked>
+            <div>
+              <div style="font-weight:600; margin-bottom:4px;">💳 Pay with Stripe (Online)</div>
+              <div style="font-size:14px; color:var(--muted);">
+                Redirect to Stripe's secure checkout.<br />
+                Accepts credit/debit cards, FPX (online banking), GrabPay.
+              </div>
+            </div>
+          </label>
 
-        <div class="info-box">
-          <div style="font-weight: 600; margin-bottom: 8px;">💳 Secure Payment with Stripe</div>
-          <div style="font-size: 14px; color: var(--muted);">
-            You will be redirected to Stripe's secure checkout page.<br />
-            We accept: Credit/Debit Cards, FPX (Online Banking), and GrabPay.
+          <label style="display:flex; gap:10px; align-items:flex-start; cursor:pointer;">
+            <input id="method-cash" type="radio" name="paymentMethod" value="CASH">
+            <div>
+              <div style="font-weight:600; margin-bottom:4px;">💵 Pay with Cash (In Person)</div>
+              <div style="font-size:14px; color:var(--muted);">
+                We will reserve your booking and record a cash payment. Pay at the counter upon arrival.
+              </div>
+            </div>
+          </label>
+
+          <div id="cash-fields" style="display:none; margin-left:26px;">
+            <label style="display:flex; flex-direction:column; gap:6px;">
+              <span style="font-weight:600;">Cash received</span>
+              <input
+                type="number"
+                name="cashReceived"
+                step="0.01"
+                min="0"
+                placeholder="Enter amount received"
+                style="width:220px;"
+                id="cash-received-input"
+              />
+            </label>
+            <div id="cash-change" class="muted" style="margin-top:6px; font-size:14px;">Change: --</div>
           </div>
         </div>
 
         <div class="actions">
           <a class="btn btn-outline" th:href="@{/tickets(fromPreview=true)}">Back</a>
-          <button class="btn btn-primary" type="submit">Proceed to Payment</button>
+          <button class="btn btn-primary" type="submit">Proceed</button>
         </div>
       </form>
 
     </section>
   </main>
 
+  <script>
+    (function() {
+      const stripeRadio = document.getElementById('method-stripe');
+      const cashRadio = document.getElementById('method-cash');
+      const cashFields = document.getElementById('cash-fields');
+      const cashInput = document.getElementById('cash-received-input');
+      const changeEl = document.getElementById('cash-change');
+      const grandTotalEl = document.getElementById('grand-total');
+
+      const grandTotal = grandTotalEl ? parseFloat(grandTotalEl.value) : NaN;
+
+      function updateVisibility() {
+        const showCash = cashRadio.checked;
+        cashFields.style.display = showCash ? 'block' : 'none';
+        if (!showCash) {
+          cashInput.value = '';
+          changeEl.textContent = 'Change: --';
+        } else {
+          computeChange();
+        }
+      }
+
+      function computeChange() {
+        const received = parseFloat(cashInput.value);
+        if (isNaN(grandTotal) || isNaN(received)) {
+          changeEl.textContent = 'Change: --';
+          return;
+        }
+        const change = received - grandTotal;
+        const prefix = change < 0 ? 'Short: ' : 'Change: ';
+        const formatted = Math.abs(change).toFixed(2);
+        changeEl.textContent = prefix + formatted;
+      }
+
+      stripeRadio.addEventListener('change', updateVisibility);
+      cashRadio.addEventListener('change', updateVisibility);
+      cashInput.addEventListener('input', computeChange);
+
+      updateVisibility();
+    })();
+  </script>
 </body>
 
 </html>

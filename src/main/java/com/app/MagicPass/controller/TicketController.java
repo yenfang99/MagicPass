@@ -53,9 +53,9 @@ public class TicketController {
         CheckoutRequest req = keepExisting ? (CheckoutRequest) session.getAttribute("previewReq") : null;
         if (req == null) {
             req = new CheckoutRequest();
-            req.setReservationDate(LocalDate.now().plusDays(1)); // default to earliest allowed date (tomorrow)
+            req.setReservationDate(LocalDate.now()); // default to earliest allowed date (today)
         } else if (req.getReservationDate() == null) {
-            req.setReservationDate(LocalDate.now().plusDays(1));
+            req.setReservationDate(LocalDate.now());
         }
 
         // Set/refresh userId from session if logged in
@@ -95,7 +95,7 @@ public class TicketController {
         if (!datePolicyService.isWithin7Days(req.getReservationDate())) {
             session.removeAttribute("previewReq");
             session.removeAttribute("previewPricing");
-            ra.addFlashAttribute("error", "Invalid reservation date. Please choose a date from tomorrow within the next 7 days.");
+            ra.addFlashAttribute("error", "Invalid reservation date. Please choose a date from today within the next 7 days.");
             return "redirect:/tickets";
         }
 
