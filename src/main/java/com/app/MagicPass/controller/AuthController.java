@@ -7,6 +7,7 @@ import com.app.MagicPass.service.StaffService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import com.app.MagicPass.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
@@ -14,10 +15,14 @@ public class AuthController {
 
     private final AuthService authService;
     private final StaffService staffService;
+    private final UserService userService;   // 👈 add this
 
-    public AuthController(AuthService authService, StaffService staffService) {
+    public AuthController(AuthService authService,
+                          StaffService staffService,
+                          UserService userService) {   // 👈 add param
         this.authService = authService;
         this.staffService = staffService;
+        this.userService = userService;      // 👈 assign
     }
 
     // ---------- REGISTER (users only) ----------
@@ -72,16 +77,8 @@ public class AuthController {
                 session.setAttribute("isStaff", true);
                 session.setAttribute("isBoss", staff.isBoss());
 
-<<<<<<< Updated upstream
-                if (staff.isBoss()) {
-                    return "redirect:/staff/manage";   // boss -> manage staff
-                } else {
-                    return "redirect:/staff";          // normal staff -> staff home
-                }
-=======
                 // All staff (including boss) go to admin dashboard
                 return "redirect:/admin/dashboard";
->>>>>>> Stashed changes
 
             } catch (IllegalArgumentException ex) {
                 model.addAttribute("error", ex.getMessage());
@@ -115,4 +112,21 @@ public class AuthController {
         model.addAttribute("success", "You have been logged out.");
         return "login";
     }
+
+    @GetMapping("/account")
+public String viewAccount(HttpSession session, Model model) {
+    // Get logged-in user from session
+    User currentUser = (User) session.getAttribute("currentUser");
+
+    if (currentUser == null) {
+        // Not logged in – redirect to login
+        return "redirect:/login";
+    }
+
+    // Optional: re-fetch from DB to make sure data is fresh
+    User userFromDb = userService.getUserById(currentUser.getId());
+
+    model.addAttribute("user", userFromDb);
+    return "user/account-detail";   // this will be your Thymeleaf page
+}
 }

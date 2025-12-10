@@ -10,6 +10,8 @@ public class DatePolicyService {
     public boolean isWithin7Days(LocalDate date) {
         if (date == null) return false;
         LocalDate today = LocalDate.now();
-        return !date.isBefore(today) && !date.isAfter(today.plusDays(MAX_DAYS_AHEAD));
+        LocalDate min = today; // allow same-day reservations
+        LocalDate max = today.plusDays(MAX_DAYS_AHEAD);
+        return !date.isBefore(min) && !date.isAfter(max);
     }
 }

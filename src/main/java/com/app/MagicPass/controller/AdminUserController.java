@@ -1,25 +1,54 @@
 package com.app.MagicPass.controller;
 
+import com.app.MagicPass.model.Membership;
 import com.app.MagicPass.model.User;
+import com.app.MagicPass.service.MembershipService;
 import com.app.MagicPass.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Controller
 @RequestMapping("/admin/users")
 public class AdminUserController {
 
     private final UserService userService;
+    private final MembershipService membershipService;
 
-    public AdminUserController(UserService userService) {
+    public AdminUserController(UserService userService, MembershipService membershipService) {
         this.userService = userService;
+        this.membershipService = membershipService;
     }
 
     @GetMapping
     public String listUsers(Model model) {
-        model.addAttribute("users", userService.getAllUsers());
+        // Get all users
+        List<User> userList = userService.getAllUsers();
+
+        // Get all memberships and create a map of userId -> active membership
+        List<Membership> allMemberships = membershipService.getAllMemberships();
+        Map<Long, Membership> userMembershipMap = new HashMap<>();
+
+        for (Membership membership : allMemberships) {
+            if (membership.getStatus() == Membership.MembershipStatus.ACTIVE) {
+                userMembershipMap.put(membership.getUserId(), membership);
+            }
+        }
+
+        // Calculate statistics
+        long totalUsers = userList.size();
+        long totalMembers = userMembershipMap.size();
+
+        model.addAttribute("userList", userList);
+        model.addAttribute("userMembershipMap", userMembershipMap);
+        model.addAttribute("totalUsers", totalUsers);
+        model.addAttribute("totalMembers", totalMembers);
+
         return "admin/users";
     }
 

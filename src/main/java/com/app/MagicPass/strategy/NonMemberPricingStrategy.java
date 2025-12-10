@@ -22,6 +22,7 @@ public class NonMemberPricingStrategy implements PricingStrategy {
         pb.setDiscount(round2(discount));
         pb.setTax(round2(tax));
         pb.setGrandTotal(round2(grand));
+        pb.setDiscountRate(0.0);
         return pb;
     }
 

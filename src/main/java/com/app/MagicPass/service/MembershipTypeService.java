@@ -81,6 +81,7 @@ public class MembershipTypeService {
         existing.setDurationMonths(updatedType.getDurationMonths());
         existing.setActive(updatedType.getActive());
         existing.setDisplayOrder(updatedType.getDisplayOrder());
+        existing.setTierLevel(updatedType.getTierLevel());
 
         return membershipTypeRepository.save(existing);
     }

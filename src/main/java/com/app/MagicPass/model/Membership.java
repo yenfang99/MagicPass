@@ -17,9 +17,9 @@ public class Membership {
     @Column(name = "customer_id", nullable = false)
     private Long userId;  // References users.id from your existing users table
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private MembershipTier tier;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "membership_type_id", nullable = false)
+    private MembershipType membershipType;
 
     @Column(nullable = false)
     private Double price;
@@ -55,8 +55,8 @@ public class Membership {
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
 
-    public MembershipTier getTier() { return tier; }
-    public void setTier(MembershipTier tier) { this.tier = tier; }
+    public MembershipType getMembershipType() { return membershipType; }
+    public void setMembershipType(MembershipType membershipType) { this.membershipType = membershipType; }
 
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }
@@ -76,29 +76,6 @@ public class Membership {
     public LocalDateTime getCreatedAt() { return createdAt; }
 
     // Enums
-    public enum MembershipTier {
-        SILVER("Silver", 199.00, 0.05, "5% discount on all tickets"),
-        GOLD("Gold", 399.00, 0.10, "10% discount on all tickets"),
-        PLATINUM("Platinum", 699.00, 0.15, "15% discount on all tickets");
-
-        private final String displayName;
-        private final Double price;
-        private final Double discountRate;
-        private final String benefits;
-
-        MembershipTier(String displayName, Double price, Double discountRate, String benefits) {
-            this.displayName = displayName;
-            this.price = price;
-            this.discountRate = discountRate;
-            this.benefits = benefits;
-        }
-
-        public String getDisplayName() { return displayName; }
-        public Double getPrice() { return price; }
-        public Double getDiscountRate() { return discountRate; }
-        public String getBenefits() { return benefits; }
-    }
-
     public enum MembershipStatus {
         ACTIVE,
         EXPIRED,

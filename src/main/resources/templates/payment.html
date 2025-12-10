@@ -1,79 +1,188 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <title>Payment Preview</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
+  <th:block th:replace="~{fragments/header :: header-styles}"></th:block>
 </head>
+
 <body>
 
-<header class="nav">
-  <div class="nav-inner">
-    <div class="brand">
-      Disney Ticketing
-      <small>Payment Preview</small>
-    </div>
-    <a class="btn btn-outline" href="/tickets">Edit</a>
-  </div>
-</header>
+  <div th:replace="~{fragments/header :: header}"></div>
 
-<main class="container">
-  <section class="card">
-    <h2 style="margin-top:0;">Payment Preview</h2>
-    <p class="muted" style="margin-top:6px;">Review the breakdown before selecting payment method.</p>
+  <main class="container">
+    <section class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+        <div>
+          <h2 style="margin:0;">Payment Preview</h2>
+          <p class="muted" style="margin-top:4px;">Review the breakdown before selecting payment method.</p>
+        </div>
+        <a class="btn btn-outline" th:href="@{/tickets(fromPreview=true)}">Edit</a>
+      </div>
 
-    <!-- Option B: no DB order yet, so no Order ID here -->
-    <p class="muted" style="margin-top:6px;">
-      Reservation Date:
-      <b th:text="${#temporals.format(req.reservationDate, 'yyyy-MM-dd')}"></b>
-    </p>
+      <div class="summary-strip">
+        <div class="summary-item">
+          <div class="summary-title">Reservation Date</div>
+          <!-- <div class="summary-value"> -->
+            <span class="chip" th:text="${#temporals.format(req.reservationDate, 'yyyy-MM-dd')}">2025-12-09</span>
+          <!-- </div> -->
+        </div>
 
-    <p class="muted" style="margin-top:10px;">
-      Tickets:
-      Adult <b th:text="${req.adultQty}"></b>,
-      Student <b th:text="${req.studentQty}"></b>,
-      Children <b th:text="${req.childQty}"></b>
-    </p>
+        <div class="summary-item">
+          <div class="summary-title">Tickets</div>
+          <div class="summary-value summary-tags">
+            <span th:if="${req.adultQty > 0}">Adult x<b th:text="${req.adultQty}">0</b></span>
+            <span th:if="${req.studentQty > 0}">Student x<b th:text="${req.studentQty}">0</b></span>
+            <span th:if="${req.childQty > 0}">Children x<b th:text="${req.childQty}">0</b></span>
+          </div>
+        </div>
 
-    <table class="table" style="margin-top:14px;">
-      <tr>
-        <td class="muted">Total</td>
-        <td class="right" th:text="${pricing.total}"></td>
-      </tr>
-      <tr>
-        <td class="muted">Discount</td>
-        <td class="right" th:text="${pricing.discount}"></td>
-      </tr>
-      <tr>
-        <td class="muted">Tax (6%)</td>
-        <td class="right" th:text="${pricing.tax}"></td>
-      </tr>
-      <tr>
-        <td class="bold">Grand Total</td>
-        <td class="right bold" th:text="${pricing.grandTotal}"></td>
-      </tr>
-    </table>
+        <div class="summary-item summary-item-accent">
+          <div class="summary-title">Membership</div>
+          <div class="summary-value">
+            <span th:if="${currentMembershipName != null}" class="chip chip-primary">
+              <span th:text="${currentMembershipName}">Platinum</span>
+              <span th:if="${currentMembershipDiscountRate != null}">
+                · <span th:text="${#numbers.formatDecimal(currentMembershipDiscountRate * 100, 0, 2)}"></span>% off
+              </span>
+            </span>
+            <span th:if="${currentMembershipName == null}" class="chip chip-neutral">No membership</span>
+          </div>
 
-    <!-- Stripe Payment Integration -->
-    <form th:action="@{/payment/confirm}" method="post" style="margin-top:16px;">
-      <input type="hidden" name="paymentMethod" value="STRIPE"/>
+          <div class="summary-subtext" th:text="${membershipHint}">
+            You're on our top membership (Platinum) and already getting the maximum discount.
+          </div>
 
-      <div style="margin-top:14px; padding: 16px; background: rgba(37,99,235,.08); border-radius: 12px; border: 1px solid rgba(37,99,235,.2);">
-        <div style="font-weight: 600; margin-bottom: 8px;">💳 Secure Payment with Stripe</div>
-        <div style="font-size: 14px; color: var(--muted);">
-          You will be redirected to Stripe's secure checkout page.<br/>
-          We accept: Credit/Debit Cards, FPX (Online Banking), and GrabPay.
+          <a th:if="${canUpgradeMembership}" href="/membership" class="summary-link">
+            View membership options
+          </a>
         </div>
       </div>
 
-      <div class="actions">
-        <a class="btn btn-outline" href="/tickets">Back</a>
-        <button class="btn btn-primary" type="submit">Proceed to Payment</button>
+
+
+      <div class="pricing-rows" style="margin-top:14px;">
+        <div class="price-row">
+          <div class="price-label muted">Total</div>
+          <div class="price-value num" th:text="${pricing.total}"></div>
+        </div>
+        <div class="price-row">
+          <div class="price-label muted">
+            Discount
+            <span th:if="${pricing.discountRate > 0}" class="badge badge-soft badge-primary"
+              th:text="${#numbers.formatDecimal(pricing.discountRate * 100, 0, 2)} + '% member'">
+              15% member
+            </span>
+          </div>
+          <div class="price-value num negative"
+            th:text="${pricing.discount > 0 ? '- ' + #numbers.formatDecimal(pricing.discount, 0, 2) : #numbers.formatDecimal(pricing.discount, 0, 2)}">
+          </div>
+        </div>
+        <div class="price-row">
+          <div class="price-label muted">Tax (6%)</div>
+          <div class="price-value num" th:text="${pricing.tax}"></div>
+        </div>
+        <div class="ghost-divider"></div>
+        <div class="price-row grand">
+          <div class="price-label bold">Grand Total</div>
+          <div class="price-value num strong" th:text="${pricing.grandTotal}"></div>
+        </div>
       </div>
-    </form>
 
-  </section>
-</main>
+      <!-- Payment Method Selection -->
+      <form th:action="@{/payment/confirm}" method="post" style="margin-top:16px;" id="payment-form">
+        <input type="hidden" id="grand-total" th:value="${pricing.grandTotal}" />
+        <div class="info-box" style="display:flex; gap:12px; flex-direction:column;">
+          <label style="display:flex; gap:10px; align-items:flex-start; cursor:pointer;">
+            <input id="method-stripe" type="radio" name="paymentMethod" value="STRIPE" checked>
+            <div>
+              <div style="font-weight:600; margin-bottom:4px;">💳 Pay with Stripe (Online)</div>
+              <div style="font-size:14px; color:var(--muted);">
+                Redirect to Stripe's secure checkout.<br />
+                Accepts credit/debit cards, FPX (online banking), GrabPay.
+              </div>
+            </div>
+          </label>
 
+          <label style="display:flex; gap:10px; align-items:flex-start; cursor:pointer;">
+            <input id="method-cash" type="radio" name="paymentMethod" value="CASH">
+            <div>
+              <div style="font-weight:600; margin-bottom:4px;">💵 Pay with Cash (In Person)</div>
+              <div style="font-size:14px; color:var(--muted);">
+                We will reserve your booking and record a cash payment. Pay at the counter upon arrival.
+              </div>
+            </div>
+          </label>
+
+          <div id="cash-fields" style="display:none; margin-left:26px;">
+            <label style="display:flex; flex-direction:column; gap:6px;">
+              <span style="font-weight:600;">Cash received</span>
+              <input
+                type="number"
+                name="cashReceived"
+                step="0.01"
+                min="0"
+                placeholder="Enter amount received"
+                style="width:220px;"
+                id="cash-received-input"
+              />
+            </label>
+            <div id="cash-change" class="muted" style="margin-top:6px; font-size:14px;">Change: --</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <a class="btn btn-outline" th:href="@{/tickets(fromPreview=true)}">Back</a>
+          <button class="btn btn-primary" type="submit">Proceed</button>
+        </div>
+      </form>
+
+    </section>
+  </main>
+
+  <script>
+    (function() {
+      const stripeRadio = document.getElementById('method-stripe');
+      const cashRadio = document.getElementById('method-cash');
+      const cashFields = document.getElementById('cash-fields');
+      const cashInput = document.getElementById('cash-received-input');
+      const changeEl = document.getElementById('cash-change');
+      const grandTotalEl = document.getElementById('grand-total');
+
+      const grandTotal = grandTotalEl ? parseFloat(grandTotalEl.value) : NaN;
+
+      function updateVisibility() {
+        const showCash = cashRadio.checked;
+        cashFields.style.display = showCash ? 'block' : 'none';
+        if (!showCash) {
+          cashInput.value = '';
+          changeEl.textContent = 'Change: --';
+        } else {
+          computeChange();
+        }
+      }
+
+      function computeChange() {
+        const received = parseFloat(cashInput.value);
+        if (isNaN(grandTotal) || isNaN(received)) {
+          changeEl.textContent = 'Change: --';
+          return;
+        }
+        const change = received - grandTotal;
+        const prefix = change < 0 ? 'Short: ' : 'Change: ';
+        const formatted = Math.abs(change).toFixed(2);
+        changeEl.textContent = prefix + formatted;
+      }
+
+      stripeRadio.addEventListener('change', updateVisibility);
+      cashRadio.addEventListener('change', updateVisibility);
+      cashInput.addEventListener('input', computeChange);
+
+      updateVisibility();
+    })();
+  </script>
 </body>
+
 </html>

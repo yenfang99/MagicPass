@@ -103,180 +103,386 @@
       flex: 1;
       margin-left: 260px;
       padding: 32px;
+      max-width: 100%;
+    }
+
+    .content-wrapper {
+      max-width: 95%;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Enhanced Form Styles */
+    .form-section {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .section-header {
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-description {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .form-field {
+      margin-bottom: 0;
+    }
+
+    .field-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .required-mark {
+      color: #e53e3e;
+      font-weight: 700;
+    }
+
+    .enhanced-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      background: var(--background);
+    }
+
+    .enhanced-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(105, 124, 212, 0.1);
+      background: white;
+    }
+
+    .enhanced-input:hover {
+      border-color: rgb(186, 168, 235);
+    }
+
+    .input-with-prefix,
+    .input-with-suffix {
+      position: relative;
+    }
+
+    .input-prefix {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .input-suffix {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 13px;
+      pointer-events: none;
+    }
+
+    .field-hint {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .page-header-badge {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--primary) 0%, #a371d4 100%);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 8px 16px rgba(105, 124, 212, 0.25);
+    }
+
+    .error-banner {
+      margin-bottom: 24px;
+      padding: 16px 20px;
+      background: #fee;
+      border-left: 4px solid #e53e3e;
+      border-radius: 10px;
+      color: #c53030;
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      padding-top: 8px;
+    }
+
+    .btn-enhanced {
+      padding: 14px 32px;
+      font-weight: 600;
+      font-size: 15px;
+      border-radius: 10px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-enhanced:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(15,23,42,.15);
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 20px;
+      }
+
+      .form-section {
+        padding: 20px;
+      }
     }
   </style>
 </head>
 <body>
-
-<!-- Sidebar -->
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <h1 class="sidebar-brand">MagicPass</h1>
-    <p class="sidebar-subtitle">Admin Dashboard</p>
-  </div>
-
-  <nav class="sidebar-menu">
-    <div class="menu-section">
-      <h3 class="menu-section-title">Main</h3>
-      <a href="/admin/dashboard" class="menu-item">
-        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7"></rect>
-          <rect x="14" y="3" width="7" height="7"></rect>
-          <rect x="14" y="14" width="7" height="7"></rect>
-          <rect x="3" y="14" width="7" height="7"></rect>
-        </svg>
-        Dashboard
-      </a>
-    </div>
-
-    <div class="menu-section">
-      <h3 class="menu-section-title">Management</h3>
-      <a href="/admin/membership-types" class="menu-item active">
-        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-          <circle cx="12" cy="7" r="4"></circle>
-        </svg>
-        Membership Types
-      </a>
-      <a href="/admin/tickets" class="menu-item">
-        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 7v4a1 1 0 0 0 1 1h3"></path>
-          <path d="M7 7v10"></path>
-          <path d="M10 8v8a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1z"></path>
-          <path d="M17 7v4a1 1 0 0 1-1 1h-3"></path>
-          <path d="M17 7v10"></path>
-        </svg>
-        Tickets
-      </a>
-      <a href="/admin/users" class="menu-item">
-        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        Users
-      </a>
-<<<<<<< Updated upstream
-=======
-      <a href="/staff/manage" class="menu-item">
-        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        Manage Staff
-      </a>
->>>>>>> Stashed changes
-    </div>
-
-    <div class="menu-section">
-      <h3 class="menu-section-title">Settings</h3>
-      <a href="/admin/settings" class="menu-item">
-        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M12 1v6m0 6v6m8.66-13.66l-4.24 4.24m-4.24 4.24l-4.24 4.24M23 12h-6m-6 0H1m20.66 8.66l-4.24-4.24m-4.24-4.24l-4.24-4.24"></path>
-        </svg>
-        Settings
-      </a>
-    </div>
-  </nav>
-
-  <div class="sidebar-footer">
-<<<<<<< Updated upstream
-    <a href="/" class="btn btn-outline" style="width: 100%; justify-content: center;">
-      Back to Site
-=======
-    <div style="padding: 0 0 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px;">
-      <div style="font-size: 11px; color: var(--muted); font-weight: 600; margin-bottom: 4px;">Logged in as:</div>
-      <div style="font-size: 13px; font-weight: 600; color: var(--text);" th:text="${session.currentStaff?.email}">staff@magicpass.my</div>
-      <div th:if="${session.isBoss}" style="display: inline-block; margin-top: 4px; padding: 2px 8px; background: #eef2ff; color: #1d4ed8; border-radius: 999px; font-size: 10px; font-weight: 700;">BOSS</div>
-      <div th:unless="${session.isBoss}" style="display: inline-block; margin-top: 4px; padding: 2px 8px; background: #fee2e2; color: #b91c1c; border-radius: 999px; font-size: 10px; font-weight: 700;">STAFF</div>
-    </div>
-    <a href="/logout" class="btn btn-outline" style="width: 100%; justify-content: center; background: rgba(239,68,68,0.1); color: #dc2626;">
-      Logout
->>>>>>> Stashed changes
-    </a>
-  </div>
-</aside>
+  <div th:replace="~{admin/fragments/admin-sidebar :: sidebar(activeTab='membership-types')}"></div>
 
 <!-- Main Content -->
 <main class="main-content">
-  <section class="card">
-    <h2 style="margin-top:0;" th:text="${mode == 'create' ? 'Create New' : 'Edit'} + ' Membership Type'">Form</h2>
+  <div class="content-wrapper">
+    <!-- Page Header -->
+    <div style="margin-bottom: 36px;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div class="page-header-badge">✨</div>
+        <div>
+          <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: var(--text); letter-spacing: -0.5px;"
+              th:text="${mode == 'create' ? 'Create New Membership Type' : 'Edit Membership Type'}">Form</h1>
+          <p style="margin: 6px 0 0; font-size: 15px; color: var(--muted);">Configure membership tier details and pricing structure</p>
+        </div>
+      </div>
+    </div>
 
-    <div th:if="${error}" class="alert" th:text="${error}"></div>
+    <div th:if="${error}" class="error-banner">
+      <span th:text="${error}"></span>
+    </div>
 
     <form th:action="${mode == 'create' ? '/admin/membership-types/create' : '/admin/membership-types/edit/' + membershipType.id}"
           th:object="${membershipType}"
           method="post">
 
-      <div class="field">
-        <label class="label" for="name">Name *</label>
-        <input class="input" type="text" id="name" th:field="*{name}"
-               placeholder="e.g., SILVER" required/>
-        <div class="hint">Internal name (uppercase, no spaces). Used as unique identifier.</div>
+    <!-- Basic Information Section -->
+    <section class="form-section">
+      <div class="section-header">
+        <h3 class="section-title">
+          <span>Basic Information</span>
+        </h3>
+        <p class="section-description">General details about the membership type</p>
       </div>
 
-      <div class="field">
-        <label class="label" for="displayName">Display Name *</label>
-        <input class="input" type="text" id="displayName" th:field="*{displayName}"
-               placeholder="e.g., Silver Membership" required/>
-        <div class="hint">Name shown to customers.</div>
-      </div>
-
-      <div class="field">
-        <label class="label" for="description">Description</label>
-        <textarea class="input" id="description" th:field="*{description}" rows="3"
-                  placeholder="Describe the benefits of this membership tier..."></textarea>
-      </div>
-
-      <div class="grid grid-3">
-        <div class="field">
-          <label class="label" for="price">Price (MYR) *</label>
-          <input class="input" type="number" id="price" th:field="*{price}"
-                 step="0.01" min="0" placeholder="99.00" required/>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+        <div class="form-field">
+          <label class="field-label" for="name">
+            <span>Name</span>
+            <span class="required-mark">*</span>
+          </label>
+          <input class="enhanced-input" type="text" id="name" th:field="*{name}"
+                 placeholder="e.g., SILVER" required
+                 style="font-family: monospace; font-weight: 600;"/>
+          <div class="field-hint">
+            <span>Internal name (uppercase, no spaces)</span>
+          </div>
         </div>
 
-        <div class="field">
-          <label class="label" for="discountRate">Discount Rate *</label>
-          <input class="input" type="number" id="discountRate" th:field="*{discountRate}"
-                 step="0.01" min="0" max="1" placeholder="0.05" required/>
-          <div class="hint">Enter as decimal (0.05 = 5%)</div>
-        </div>
-
-        <div class="field">
-          <label class="label" for="durationMonths">Duration (Months) *</label>
-          <input class="input" type="number" id="durationMonths" th:field="*{durationMonths}"
-                 min="1" placeholder="12" required/>
+        <div class="form-field">
+          <label class="field-label" for="displayName">
+            <span>Display Name</span>
+            <span class="required-mark">*</span>
+          </label>
+          <input class="enhanced-input" type="text" id="displayName" th:field="*{displayName}"
+                 placeholder="e.g., Silver Membership" required/>
+          <div class="field-hint">
+            <span>Name shown to customers</span>
+          </div>
         </div>
       </div>
 
-      <div class="grid grid-3">
-        <div class="field">
-          <label class="label" for="displayOrder">Display Order *</label>
-          <input class="input" type="number" id="displayOrder" th:field="*{displayOrder}"
+      <div class="form-field">
+        <label class="field-label" for="description">
+          <span>Description</span>
+          <span style="color: var(--muted); font-weight: 400; font-size: 12px;">(Optional)</span>
+        </label>
+        <textarea class="enhanced-input" id="description" th:field="*{description}" rows="4"
+                  placeholder="Describe the benefits of this membership tier..."
+                  style="resize: vertical;"></textarea>
+        <div class="field-hint">
+          <span>Describe membership benefits and features</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing & Duration Section -->
+    <section class="form-section">
+      <div class="section-header">
+        <h3 class="section-title">
+          <span>Pricing & Duration</span>
+        </h3>
+        <p class="section-description">Set membership price, discount, and validity period</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+        <div class="form-field">
+          <label class="field-label" for="price">
+            <span>Price (MYR)</span>
+            <span class="required-mark">*</span>
+          </label>
+          <div class="input-with-prefix">
+            <span class="input-prefix">RM</span>
+            <input class="enhanced-input" type="number" id="price" th:field="*{price}"
+                   step="0.01" min="0" placeholder="99.00" required
+                   style="padding-left: 46px; font-weight: 600;"/>
+          </div>
+          <div class="field-hint">
+            <span>Membership purchase price</span>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="field-label" for="discountRate">
+            <span>Discount Rate</span>
+            <span class="required-mark">*</span>
+          </label>
+          <div class="input-with-suffix">
+            <input class="enhanced-input" type="number" id="discountRate" th:field="*{discountRate}"
+                   step="0.01" min="0" max="1" placeholder="0.05" required
+                   style="padding-right: 46px;"/>
+            <span class="input-suffix">%</span>
+          </div>
+          <div class="field-hint">
+            <span>Enter as decimal (0.05 = 5%)</span>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="field-label" for="durationMonths">
+            <span>Duration</span>
+            <span class="required-mark">*</span>
+          </label>
+          <div class="input-with-suffix">
+            <input class="enhanced-input" type="number" id="durationMonths" th:field="*{durationMonths}"
+                   min="1" placeholder="12" required
+                   style="padding-right: 75px;"/>
+            <span class="input-suffix">months</span>
+          </div>
+          <div class="field-hint">
+            <span>Membership validity period</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Configuration Section -->
+    <section class="form-section">
+      <div class="section-header">
+        <h3 class="section-title">
+          <span>Configuration</span>
+        </h3>
+        <p class="section-description">Tier level, display order, and status settings</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;">
+        <div class="form-field">
+          <label class="field-label" for="tierLevel">
+            <span>Tier Level</span>
+            <span class="required-mark">*</span>
+          </label>
+          <input class="enhanced-input" type="number" id="tierLevel" th:field="*{tierLevel}"
+                 min="1" placeholder="1" required/>
+          <div class="field-hint">
+            <span>Higher number = premium tier</span>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label class="field-label" for="displayOrder">
+            <span>Display Order</span>
+            <span class="required-mark">*</span>
+          </label>
+          <input class="enhanced-input" type="number" id="displayOrder" th:field="*{displayOrder}"
                  min="0" placeholder="0" required/>
-          <div class="hint">Lower numbers appear first.</div>
+          <div class="field-hint">
+            <span>Lower numbers appear first</span>
+          </div>
         </div>
 
-        <div class="field">
-          <label class="label" for="active">Status *</label>
-          <select class="input" id="active" th:field="*{active}" required>
+        <div class="form-field">
+          <label class="field-label" for="active">
+            <span>Status</span>
+            <span class="required-mark">*</span>
+          </label>
+          <select class="enhanced-input" id="active" th:field="*{active}" required style="cursor: pointer;">
             <option th:value="true">Active</option>
             <option th:value="false">Inactive</option>
           </select>
+          <div class="field-hint">
+            <span>Control membership visibility</span>
+          </div>
         </div>
       </div>
+    </section>
 
-      <div class="actions">
-        <a class="btn btn-outline" th:href="@{/admin/membership-types}">Cancel</a>
-        <button class="btn btn-primary" type="submit"
-                th:text="${mode == 'create' ? 'Create' : 'Update'} + ' Membership Type'">Submit</button>
-      </div>
+    <!-- Action Buttons -->
+    <div class="form-actions">
+      <a class="btn btn-outline btn-enhanced" th:href="@{/admin/membership-types}">
+        <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        <span>Cancel</span>
+      </a>
+      <button class="btn btn-primary btn-enhanced" type="submit">
+        <span th:if="${mode == 'create'}">✨</span>
+        <span th:if="${mode != 'create'}">💾</span>
+        <span th:text="${mode == 'create' ? 'Create Membership Type' : 'Update Membership Type'}">Submit</span>
+      </button>
+    </div>
     </form>
-  </section>
+  </div>
 </main>
 
 </body>

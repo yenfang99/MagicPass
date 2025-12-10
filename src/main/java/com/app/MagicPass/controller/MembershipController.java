@@ -10,7 +10,10 @@ import com.stripe.model.checkout.Session;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,8 +32,8 @@ public class MembershipController {
     private String serverPort;
 
     public MembershipController(MembershipService membershipService,
-                               MembershipTypeService membershipTypeService,
-                               StripeService stripeService) {
+                                MembershipTypeService membershipTypeService,
+                                StripeService stripeService) {
         this.membershipService = membershipService;
         this.membershipTypeService = membershipTypeService;
         this.stripeService = stripeService;
@@ -38,23 +41,23 @@ public class MembershipController {
 
     @GetMapping
     public String membershipPage(HttpSession session, Model model) {
-        // Get current user from session
         User currentUser = (User) session.getAttribute("currentUser");
-
         if (currentUser == null) {
-            return "redirect:/login";  // Redirect to login if not authenticated
+            return "redirect:/login";
         }
 
         Long userId = currentUser.getId();
 
-        // Load dynamic membership types from database
         List<MembershipType> membershipTypes = membershipTypeService.getActiveMembershipTypes();
         model.addAttribute("membershipTypes", membershipTypes);
 
-        // Get user's current active membership
-        Membership currentMembership = membershipService.getActiveMembership(userId);
+        Membership currentMembership = membershipService.getActiveMembershipWithActiveType(userId);
+        MembershipType currentType = currentMembership != null ? currentMembership.getMembershipType() : null;
+
         model.addAttribute("currentMembership", currentMembership);
+        model.addAttribute("currentMembershipType", currentType);
         model.addAttribute("currentUser", currentUser);
+        model.addAttribute("currentTierLevel", currentType != null ? currentType.getTierLevel() : 0);
 
         return "membership";
     }
@@ -67,35 +70,34 @@ public class MembershipController {
             RedirectAttributes ra) {
 
         try {
-            // Get current user from session
             User currentUser = (User) httpSession.getAttribute("currentUser");
-
             if (currentUser == null) {
                 ra.addFlashAttribute("error", "Please login to purchase a membership.");
                 return "redirect:/login";
             }
 
             Long userId = currentUser.getId();
-
-            // Get the membership type from database
             MembershipType membershipType = membershipTypeService.getMembershipTypeById(membershipTypeId);
+            if (!Boolean.TRUE.equals(membershipType.getActive())) {
+                ra.addFlashAttribute("error", "This membership type is inactive.");
+                return "redirect:/membership";
+            }
 
-            // Get base URL
+            String purchaseGuard = membershipService.canPurchaseMembershipType(userId, membershipType);
+            if (purchaseGuard != null) {
+                ra.addFlashAttribute("error", purchaseGuard);
+                return "redirect:/membership";
+            }
+
             String baseUrl = "http://localhost:" + serverPort;
 
-            // Create Stripe Checkout Session
             Session session = stripeService.createCheckoutSession(
-                    membershipType.getDisplayName(),
-                    membershipType.getPrice(),
+                    membershipType,
                     userId,
                     baseUrl + "/membership/success?session_id={CHECKOUT_SESSION_ID}",
                     baseUrl + "/membership/cancel"
             );
 
-            // Store membershipTypeId in Stripe metadata
-            // Note: You may want to add this to the createCheckoutSession method
-
-            // Redirect to Stripe Checkout
             return "redirect:" + session.getUrl();
 
         } catch (Exception e) {
@@ -110,18 +112,19 @@ public class MembershipController {
             RedirectAttributes ra) {
 
         try {
-            // Retrieve session from Stripe
             Session session = stripeService.retrieveSession(sessionId);
 
-            // Check if payment was successful
             if ("paid".equals(session.getPaymentStatus())) {
-                // Get metadata
                 String userId = session.getMetadata().get("userId");
-                String tierName = session.getMetadata().get("tier");
+                String membershipTypeIdStr = session.getMetadata().get("membershipTypeId");
 
-                // Create membership
-                Membership.MembershipTier tier = Membership.MembershipTier.valueOf(tierName.toUpperCase());
-                Membership membership = membershipService.purchaseMembership(Long.parseLong(userId), tier);
+                MembershipType membershipType = membershipTypeService.getMembershipTypeById(Long.parseLong(membershipTypeIdStr));
+                if (!Boolean.TRUE.equals(membershipType.getActive())) {
+                    ra.addFlashAttribute("error", "This membership type is no longer available.");
+                    return "redirect:/membership";
+                }
+
+                Membership membership = membershipService.purchaseMembership(Long.parseLong(userId), membershipType);
 
                 ra.addFlashAttribute("success", "Payment successful!");
                 return "redirect:/membership/confirmation?id=" + membership.getMembershipId();
@@ -143,9 +146,52 @@ public class MembershipController {
     }
 
     @GetMapping("/confirmation")
-    public String confirmation(@RequestParam("id") String membershipId, Model model) {
-        // In a real app, you'd fetch the membership details here
-        model.addAttribute("membershipId", membershipId);
-        return "membership-confirmation";
+    public String confirmation(@RequestParam("id") String membershipId, Model model, RedirectAttributes ra) {
+        try {
+            Membership membership = membershipService.getMembershipByMembershipId(membershipId);
+
+            if (membership == null) {
+                ra.addFlashAttribute("error", "Membership not found.");
+                return "redirect:/membership";
+            }
+
+            MembershipType membershipType = membership.getMembershipType();
+
+            model.addAttribute("membershipId", membership.getMembershipId());
+            model.addAttribute("tier", membershipType.getDisplayName());
+            model.addAttribute("startDate", membership.getStartDate());
+            model.addAttribute("expiryDate", membership.getExpiryDate());
+            model.addAttribute("discountRate", membership.getDiscountRate() * 100);
+            model.addAttribute("price", membership.getPrice());
+
+            String description = membershipType.getDescription() != null ? membershipType.getDescription() : "";
+            java.util.List<String> benefitsList = new java.util.ArrayList<>();
+            if (!description.isEmpty()) {
+                String[] lines = description.split("\\r?\\n");
+                if (lines.length > 1) {
+                    for (String line : lines) {
+                        String trimmed = line.trim();
+                        if (!trimmed.isEmpty()) {
+                            benefitsList.add(trimmed);
+                        }
+                    }
+                } else {
+                    String[] sentences = description.split("\\.");
+                    for (String sentence : sentences) {
+                        String trimmed = sentence.trim();
+                        if (!trimmed.isEmpty()) {
+                            benefitsList.add(trimmed);
+                        }
+                    }
+                }
+            }
+
+            model.addAttribute("benefitsList", benefitsList);
+
+            return "membership-confirmation";
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "Error loading membership details: " + e.getMessage());
+            return "redirect:/membership";
+        }
     }
 }

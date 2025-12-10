@@ -29,11 +29,14 @@
         <td class="muted">Payment Method</td>
         <td class="right" th:text="${order.paymentMethod}">CARD</td>
       </tr>
-      <tr>
-        <td class="muted">Status</td>
-        <td class="right" th:text="${order.status}">PAID</td>
-      </tr>
-    </table>
+    <tr>
+      <td class="muted">Status</td>
+      <td class="right" th:text="${order.status}">PAID</td>
+    </tr>
+  </table>
+    <p th:if="${order.paymentMethod == 'CASH'}" class="muted" style="margin-top:6px;">
+      Payment method: Cash. Please present this receipt at the counter.
+    </p>
 
     <h3 style="margin-top:18px; margin-bottom:10px;">Order Details</h3>
 
@@ -72,11 +75,20 @@
       <td class="bold">Grand Total</td>
       <td class="right bold" th:text="${#numbers.formatDecimal(order.grandTotal, 1, 'COMMA', 2, 'POINT')}">0.00</td>
     </tr>
+    <tr th:if="${order.paymentMethod == 'CASH' && order.cashReceived != null}">
+      <td class="muted">Cash Received</td>
+      <td class="right" th:text="${#numbers.formatDecimal(order.cashReceived, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
+    <tr th:if="${order.paymentMethod == 'CASH' && order.cashChange != null}">
+      <td class="bold">Change Returned</td>
+      <td class="right bold" th:text="${#numbers.formatDecimal(order.cashChange, 1, 'COMMA', 2, 'POINT')}">0.00</td>
+    </tr>
   </table>
 
 
     <div class="actions" style="margin-top:16px;">
-      <a class="btn btn-outline" href="/tickets">Buy Another Ticket</a>
+      <a th:if="${showBackToHistory}" class="btn btn-outline" href="/user/orders">Back to Order History</a>
+      <a th:if="${!showBackToHistory}" class="btn btn-outline" href="/tickets">Buy Another Ticket</a>
       <button class="btn btn-primary" onclick="window.print()">Print</button>
     </div>
   </section>

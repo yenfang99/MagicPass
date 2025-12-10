@@ -9,118 +9,527 @@
   <th:block th:replace="~{fragments/header :: header-styles}"></th:block>
 
   <style>
+    body {
+      background: linear-gradient(to bottom, #f8fafc 0%, #ffffff 100%);
+      min-height: 100vh;
+    }
+
+    /* Hero Banner */
     .hero-banner {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       text-align: center;
-      padding: 60px 28px;
-      border-radius: 18px;
-      margin-bottom: 32px;
+      padding: 100px 48px;
+      border-radius: 24px;
+      margin-bottom: 80px;
       box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+      position: relative;
+      overflow: hidden;
     }
+
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%);
+    }
+
+    .hero-banner > * {
+      position: relative;
+      z-index: 1;
+    }
+
     .hero-banner h1 {
-      font-size: 48px;
-      margin: 0 0 12px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      font-size: 64px;
+      margin: 0 0 20px;
+      text-shadow: 2px 4px 8px rgba(0,0,0,0.2);
+      font-weight: 900;
+      letter-spacing: -2px;
+      animation: fadeInUp 0.8s ease-out;
     }
+
     .hero-banner .tagline {
-      font-size: 20px;
-      margin: 0 0 28px;
+      font-size: 24px;
+      margin: 0 0 40px;
       opacity: 0.95;
+      font-weight: 400;
+      animation: fadeInUp 0.8s ease-out 0.2s backwards;
     }
+
+    .hero-banner .btn-large {
+      animation: fadeInUp 0.8s ease-out 0.4s backwards;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Section Headers */
+    .section-header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .section-header h2 {
+      font-size: 44px;
+      font-weight: 800;
+      margin: 0 0 16px;
+      color: var(--text);
+      letter-spacing: -1px;
+    }
+
+    .section-header p {
+      font-size: 18px;
+      color: var(--muted);
+      margin: 0;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* Features Section */
+    .features-section {
+      margin-bottom: 100px;
+    }
+
     .features-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 24px;
-      margin-bottom: 32px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
     }
+
     .feature-card {
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 28px;
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 40px 32px;
       text-align: center;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
     }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      transform: scaleX(0);
+      transition: transform 0.4s ease;
+    }
+
+    .feature-card:hover::before {
+      transform: scaleX(1);
+    }
+
     .feature-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 30px rgba(15,23,42,.15);
+      transform: translateY(-12px);
+      box-shadow: 0 20px 50px rgba(15,23,42,.12);
     }
+
     .feature-icon {
-      font-size: 48px;
-      margin-bottom: 16px;
+      font-size: 64px;
+      margin-bottom: 24px;
+      display: inline-block;
+      transition: transform 0.4s ease;
     }
+
+    .feature-card:hover .feature-icon {
+      transform: scale(1.15) rotate(5deg);
+    }
+
     .feature-card h3 {
-      margin: 0 0 10px;
-      font-size: 20px;
+      margin: 0 0 16px;
+      font-size: 24px;
+      font-weight: 800;
       color: var(--text);
     }
+
     .feature-card p {
       margin: 0;
       color: var(--muted);
-      line-height: 1.6;
-      font-size: 14px;
+      line-height: 1.7;
+      font-size: 15px;
     }
+
+    /* Membership Section */
+    .membership-section {
+      margin-bottom: 100px;
+    }
+
+    .membership-banner {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      background: white;
+      padding: 56px 64px;
+      border-radius: 24px;
+      color: var(--text);
+      text-decoration: none;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .membership-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(105, 124, 212, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(163, 113, 212, 0.03) 0%, transparent 50%);
+      z-index: 0;
+    }
+
+    .membership-banner > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .membership-banner:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .membership-banner-icon {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, var(--primary) 0%, #a371d4 100%);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 56px;
+      flex-shrink: 0;
+      transition: all 0.4s ease;
+      box-shadow: 0 8px 24px rgba(105, 124, 212, 0.25);
+    }
+
+    .membership-banner:hover .membership-banner-icon {
+      transform: scale(1.05) rotate(-5deg);
+      box-shadow: 0 12px 32px rgba(105, 124, 212, 0.35);
+    }
+
+    .membership-banner-content {
+      flex: 1;
+    }
+
+    .membership-banner-content h2 {
+      font-size: 40px;
+      font-weight: 900;
+      margin: 0 0 12px;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, var(--primary) 0%, #a371d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .membership-banner-content p {
+      font-size: 17px;
+      margin: 0 0 28px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .membership-banner-features {
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      color: var(--text);
+      padding: 12px 20px;
+      background: var(--background);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+    }
+
+    .feature-item {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+    }
+
+    .feature-icon {
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .membership-banner-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 40px;
+      background: linear-gradient(135deg, var(--primary) 0%, #a371d4 100%);
+      color: white;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 24px rgba(105, 124, 212, 0.3);
+      flex-shrink: 0;
+    }
+
+    .membership-banner:hover .membership-banner-cta {
+      transform: scale(1.05);
+      box-shadow: 0 12px 32px rgba(105, 124, 212, 0.4);
+    }
+
+    .membership-banner-cta svg {
+      transition: transform 0.3s ease;
+    }
+
+    .membership-banner:hover .membership-banner-cta svg {
+      transform: translateX(4px);
+    }
+
+    /* Pricing Section */
     .pricing-section {
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 32px;
-      margin-bottom: 32px;
+      border: 2px solid var(--border);
+      border-radius: 24px;
+      padding: 56px 48px;
+      margin-bottom: 80px;
+      box-shadow: 0 8px 24px rgba(15,23,42,.06);
     }
+
     .pricing-section h2 {
       text-align: center;
-      margin: 0 0 28px;
-      font-size: 32px;
-    }
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-    }
-    .price-card {
-      background: var(--primary-soft);
-      border: 2px solid var(--border);
-      border-radius: 14px;
-      padding: 24px;
-      text-align: center;
-    }
-    .price-card .ticket-type {
-      font-size: 18px;
-      font-weight: 700;
-      margin-bottom: 12px;
-      color: var(--primary);
-    }
-    .price-card .price {
-      font-size: 36px;
+      margin: 0 0 48px;
+      font-size: 40px;
       font-weight: 800;
       color: var(--text);
-      margin-bottom: 8px;
+      letter-spacing: -1px;
     }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 32px;
+    }
+
+    .price-card {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 32px;
+      text-align: center;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .price-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+      transition: all 0.5s ease;
+      opacity: 0;
+    }
+
+    .price-card:hover::after {
+      opacity: 1;
+    }
+
+    .price-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 16px 40px rgba(102, 126, 234, 0.15);
+      border-color: var(--primary);
+    }
+
+    .price-card .ticket-type {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      color: var(--primary);
+      position: relative;
+      z-index: 1;
+    }
+
+    .price-card .price {
+      font-size: 52px;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 16px;
+      letter-spacing: -2px;
+      position: relative;
+      z-index: 1;
+    }
+
     .price-card .price-note {
-      font-size: 13px;
+      font-size: 15px;
       color: var(--muted);
+      position: relative;
+      z-index: 1;
     }
+
+    /* Call to Action */
     .cta-section {
       text-align: center;
-      padding: 40px 28px;
+      padding: 80px 48px;
       background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      border-radius: 18px;
+      border-radius: 24px;
       color: white;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(245, 87, 108, 0.3);
     }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        radial-gradient(circle at 30% 50%, rgba(255,255,255,0.15) 0%, transparent 50%),
+        radial-gradient(circle at 70% 80%, rgba(255,255,255,0.1) 0%, transparent 50%);
+    }
+
+    .cta-section > * {
+      position: relative;
+      z-index: 1;
+    }
+
     .cta-section h2 {
-      margin: 0 0 16px;
-      font-size: 32px;
+      margin: 0 0 20px;
+      font-size: 48px;
+      font-weight: 900;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+      letter-spacing: -1px;
     }
+
     .cta-section p {
-      margin: 0 0 24px;
-      font-size: 16px;
+      margin: 0 0 40px;
+      font-size: 20px;
       opacity: 0.95;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 40px;
     }
+
     .btn-large {
-      padding: 16px 32px;
+      padding: 20px 44px;
       font-size: 18px;
       font-weight: 700;
+      border-radius: 14px;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .btn-large:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px rgba(0,0,0,0.2);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+      .features-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .membership-banner {
+        flex-direction: column;
+        text-align: center;
+        padding: 40px 32px;
+      }
+
+      .membership-banner-features {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hero-banner {
+        padding: 60px 28px;
+      }
+
+      .hero-banner h1 {
+        font-size: 42px;
+      }
+
+      .hero-banner .tagline {
+        font-size: 18px;
+      }
+
+      .section-header h2 {
+        font-size: 32px;
+      }
+
+      .feature-card {
+        padding: 32px 24px;
+      }
+
+      .membership-banner {
+        padding: 32px 24px;
+      }
+
+      .membership-banner-content h2 {
+        font-size: 28px;
+      }
+
+      .membership-banner-content p {
+        font-size: 16px;
+      }
+
+      .membership-banner-features {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .pricing-section {
+        padding: 40px 28px;
+      }
+
+      .cta-section {
+        padding: 48px 28px;
+      }
+
+      .cta-section h2 {
+        font-size: 32px;
+      }
+    }
+
+    /* Smooth Scroll */
+    html {
+      scroll-behavior: smooth;
     }
   </style>
 </head>
@@ -135,33 +544,64 @@
   <section class="hero-banner">
     <h1>Welcome to MagicPass</h1>
     <p class="tagline">Your Gateway to Unforgettable Adventures</p>
-    <a class="btn btn-primary btn-large" href="/tickets">Buy Tickets Now</a>
+    <a class="btn btn-primary btn-large" href="/tickets">
+      <span>Buy Tickets Now</span>
+      <svg style="width: 22px; height: 22px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
+    </a>
   </section>
 
   <!-- Features Section -->
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-icon">🎢</div>
-      <h3>Thrilling Rides</h3>
-      <p>Experience world-class attractions and heart-pounding adventures for all ages</p>
+  <section class="features-section">
+    <div class="section-header">
+      <h2>Why Choose MagicPass?</h2>
+      <p>Experience the best theme park adventure with world-class attractions and unforgettable moments</p>
     </div>
 
-    <div class="feature-card">
-      <div class="feature-icon">🎭</div>
-      <h3>Live Shows</h3>
-      <p>Enjoy spectacular performances and entertainment throughout the day</p>
-    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎢</div>
+        <h3>Thrilling Rides</h3>
+        <p>Experience world-class attractions and heart-pounding adventures for all ages</p>
+      </div>
 
-    <div class="feature-card">
-      <div class="feature-icon">🍿</div>
-      <h3>Dining & Treats</h3>
-      <p>Savor delicious food and magical treats from around the park</p>
+      <div class="feature-card">
+        <div class="feature-icon">🎭</div>
+        <h3>Live Shows</h3>
+        <p>Enjoy spectacular performances and entertainment throughout the day</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🍿</div>
+        <h3>Dining & Treats</h3>
+        <p>Savor delicious food and magical treats from around the park</p>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <!-- Membership Section -->
+  <section class="membership-section">
+    <a href="/membership" class="membership-banner">
+      <div class="membership-banner-icon">💎</div>
+      <div class="membership-banner-content">
+        <h2>Become a Member</h2>
+        <p>Unlock exclusive benefits and save up to 15% on every visit with our premium membership plans</p>
+      </div>
+      <div class="membership-banner-cta">
+        <span>Explore Memberships</span>
+        <svg style="width: 24px; height: 24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </div>
+    </a>
+  </section>
 
   <!-- Pricing Section -->
   <section class="pricing-section">
-    <h2>Ticket Pricing</h2>
+    <h2>🎫 Ticket Pricing</h2>
     <div class="pricing-grid">
       <div class="price-card">
         <div class="ticket-type">Adult</div>
@@ -187,11 +627,17 @@
   <section class="cta-section">
     <h2>Ready for the Adventure?</h2>
     <p>Book your tickets now and create magical memories that last a lifetime!</p>
-    <a class="btn btn-primary btn-large" href="/tickets" style="background: white; color: #f5576c; border: none;">Get Started</a>
+    <a class="btn btn-primary btn-large" href="/tickets" style="background: white; color: #f5576c; border: none;">
+      <span>Get Started</span>
+      <svg style="width: 22px; height: 22px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polyline points="12 16 16 12 12 8"></polyline>
+        <line x1="8" y1="12" x2="16" y2="12"></line>
+      </svg>
+    </a>
   </section>
 
 </main>
 
 </body>
 </html>
-

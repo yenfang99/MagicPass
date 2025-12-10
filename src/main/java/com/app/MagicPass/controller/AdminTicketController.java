@@ -12,9 +12,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AdminTicketController {
 
     private final OrderRepository orderRepository;
+    private final com.app.MagicPass.repository.UserRepository userRepository;
 
-    public AdminTicketController(OrderRepository orderRepository) {
+    public AdminTicketController(OrderRepository orderRepository, com.app.MagicPass.repository.UserRepository userRepository) {
         this.orderRepository = orderRepository;
+        this.userRepository = userRepository;
     }
 
     @GetMapping
@@ -27,6 +29,7 @@ public class AdminTicketController {
     public String showCreateForm(Model model) {
         model.addAttribute("ticket", new Order());
         model.addAttribute("mode", "create");
+        model.addAttribute("users", userRepository.findAll());
         return "admin/ticket-form";
     }
 
@@ -48,6 +51,7 @@ public class AdminTicketController {
                 .map(order -> {
                     model.addAttribute("ticket", order);
                     model.addAttribute("mode", "edit");
+                    model.addAttribute("users", userRepository.findAll());
                     return "admin/ticket-form";
                 })
                 .orElseGet(() -> {
@@ -62,7 +66,7 @@ public class AdminTicketController {
             return orderRepository.findById(id)
                     .map(existing -> {
                         existing.setOrderCode(ticket.getOrderCode());
-                        existing.setCustomerId(ticket.getCustomerId());
+                        existing.setUserId(ticket.getUserId());
                         existing.setAdultQty(ticket.getAdultQty());
                         existing.setStudentQty(ticket.getStudentQty());
                         existing.setChildQty(ticket.getChildQty());

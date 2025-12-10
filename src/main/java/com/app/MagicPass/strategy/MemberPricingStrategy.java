@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import com.app.MagicPass.dto.CheckoutRequest;
 import com.app.MagicPass.dto.PricingBreakdown;
 import com.app.MagicPass.model.Membership;
+import com.app.MagicPass.model.MembershipType;
 import com.app.MagicPass.service.MembershipService;
 
 @Component("memberPricingStrategy")
@@ -22,16 +23,15 @@ public class MemberPricingStrategy implements PricingStrategy {
     public PricingBreakdown calculate(CheckoutRequest req) {
         double subtotal = req.getAdultQty()*ADULT + req.getStudentQty()*STUDENT + req.getChildQty()*CHILD;
 
-        // Get user's membership discount rate (default 0.10 if membership not found)
-        double discountRate = 0.10; // Default 10%
+        // Default: no discount until we confirm an active membership and active type
+        double discountRate = 0.0;
 
         // Try to get actual membership discount from database
-        // Note: This assumes userId is set in CheckoutRequest
-        // If not available, you'll need to pass it differently
         if (req.getUserId() != null) {
-            Membership activeMembership = membershipService.getActiveMembership(req.getUserId());
+            Membership activeMembership = membershipService.getActiveMembershipWithActiveType(req.getUserId());
             if (activeMembership != null) {
-                discountRate = activeMembership.getDiscountRate();
+                MembershipType type = activeMembership.getMembershipType();
+                discountRate = type != null ? type.getDiscountRate() : activeMembership.getDiscountRate();
             }
         }
 
@@ -44,6 +44,7 @@ public class MemberPricingStrategy implements PricingStrategy {
         pb.setDiscount(round2(discount));
         pb.setTax(round2(tax));
         pb.setGrandTotal(round2(grand));
+        pb.setDiscountRate(round2(discountRate * 100.0) / 100.0); // store as fraction (not percent)
         return pb;
     }
 

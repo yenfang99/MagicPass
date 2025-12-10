@@ -16,10 +16,14 @@ public class OrderService {
     this.orderRepository = orderRepository;
   }
 
-  // NEW: save only after payment
-  public Order createPaidOrder(CheckoutRequest req, PricingBreakdown pricing, String paymentMethod) {
+  public java.util.List<Order> getOrdersForUser(Long userId) {
+    return orderRepository.findByUserIdOrderByCreatedAtDesc(userId);
+  }
+
+  public Order createPaidOrder(CheckoutRequest req, PricingBreakdown pricing, String paymentMethod,
+                               Double cashReceived, Double cashChange) {
     Order order = new Order();
-    order.setCustomerId(req.getCustomerId());
+    order.setUserId(req.getUserId());
     order.setAdultQty(req.getAdultQty());
     order.setStudentQty(req.getStudentQty());
     order.setChildQty(req.getChildQty());
@@ -32,6 +36,8 @@ public class OrderService {
 
     order.setStatus("PAID");
     order.setPaymentMethod(paymentMethod);
+    order.setCashReceived(cashReceived);
+    order.setCashChange(cashChange);
 
     return orderRepository.save(order);
   }

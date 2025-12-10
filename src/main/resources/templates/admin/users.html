@@ -182,97 +182,15 @@
 <body>
 
 <!-- Sidebar -->
-<aside class="sidebar">
-  <div class="sidebar-header">
-    <h1 class="sidebar-brand">MagicPass</h1>
-    <p class="sidebar-subtitle">Admin Dashboard</p>
-  </div>
-
-  <nav class="sidebar-menu">
-    <div class="menu-section">
-      <h3 class="menu-section-title">Main</h3>
-      <a href="/admin/dashboard" class="menu-item">
-        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7"></rect>
-          <rect x="14" y="3" width="7" height="7"></rect>
-          <rect x="14" y="14" width="7" height="7"></rect>
-          <rect x="3" y="14" width="7" height="7"></rect>
-        </svg>
-        Dashboard
-      </a>
-    </div>
-
-    <div class="menu-section">
-      <h3 class="menu-section-title">Management</h3>
-      <a href="/admin/membership-types" class="menu-item">
-        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-          <circle cx="12" cy="7" r="4"></circle>
-        </svg>
-        Membership Types
-      </a>
-      <a href="/admin/tickets" class="menu-item">
-        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 7v4a1 1 0 0 0 1 1h3"></path>
-          <path d="M7 7v10"></path>
-          <path d="M10 8v8a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1z"></path>
-          <path d="M17 7v4a1 1 0 0 1-1 1h-3"></path>
-          <path d="M17 7v10"></path>
-        </svg>
-        Tickets
-      </a>
-      <a href="/admin/users" class="menu-item active">
-        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        Users
-      </a>
-      <a href="/staff/manage" class="menu-item">
-        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        Manage Staff
-      </a>
-    </div>
-
-    <div class="menu-section">
-      <h3 class="menu-section-title">Settings</h3>
-      <a href="/admin/settings" class="menu-item">
-        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M12 1v6m0 6v6m8.66-13.66l-4.24 4.24m-4.24 4.24l-4.24 4.24M23 12h-6m-6 0H1m20.66 8.66l-4.24-4.24m-4.24-4.24l-4.24-4.24"></path>
-        </svg>
-        Settings
-      </a>
-    </div>
-  </nav>
-
- <div class="sidebar-footer">
-    <div style="padding: 0 0 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px;">
-      <div style="font-size: 11px; color: var(--muted); font-weight: 600; margin-bottom: 4px;">Logged in as:</div>
-      <div style="font-size: 13px; font-weight: 600; color: var(--text);" th:text="${session.currentStaff?.email}">staff@magicpass.my</div>
-      <div th:if="${session.isBoss}" style="display: inline-block; margin-top: 4px; padding: 2px 8px; background: #eef2ff; color: #1d4ed8; border-radius: 999px; font-size: 10px; font-weight: 700;">BOSS</div>
-      <div th:unless="${session.isBoss}" style="display: inline-block; margin-top: 4px; padding: 2px 8px; background: #fee2e2; color: #b91c1c; border-radius: 999px; font-size: 10px; font-weight: 700;">STAFF</div>
-    </div>
-    <a href="/logout" class="btn btn-outline" style="width: 100%; justify-content: center; background: rgba(239,68,68,0.1); color: #dc2626;">
-      Logout
-    </a>
-  </div>
-</aside>
+  <div th:replace="~{admin/fragments/admin-sidebar :: sidebar(activeTab='users')}"></div>
 
 <!-- Main Content -->
 <main class="main-content">
   <section class="card">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h2 style="margin:0;">Users</h2>
+      <h2 style="margin:0;">Customers</h2>
       <a href="/admin/users/create" class="btn btn-primary">
-        + Create New User
+        + Create New Customer
       </a>
     </div>
 
@@ -285,30 +203,42 @@
           <th>ID</th>
           <th>Email</th>
           <th>Member Status</th>
+          <th>Membership Type</th>
           <th>Created</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr th:each="u : ${users}">
+        <tr th:each="u : ${userList}">
           <td th:text="${u.id}">1</td>
           <td th:text="${u.email}">user@example.com</td>
           <td>
-            <span th:if="${u.member}" class="badge badge-active">Member</span>
-            <span th:unless="${u.member}" class="badge badge-inactive">Non-member</span>
+            <span th:if="${userMembershipMap.containsKey(u.id)}" class="badge badge-active">Member</span>
+            <span th:unless="${userMembershipMap.containsKey(u.id)}" class="badge badge-inactive">Non-member</span>
+          </td>
+          <td>
+            <th:block th:if="${userMembershipMap.containsKey(u.id)}">
+              <th:block th:with="membership=${userMembershipMap.get(u.id)}">
+                <span th:if="${#strings.toUpperCase(membership.membershipType.name) == 'SILVER'}"
+                      class="badge badge-silver"
+                      th:text="${membership.membershipType.displayName}">Silver</span>
+                <span th:if="${#strings.toUpperCase(membership.membershipType.name) == 'GOLD'}"
+                      class="badge badge-gold"
+                      th:text="${membership.membershipType.displayName}">Gold</span>
+                <span th:if="${#strings.toUpperCase(membership.membershipType.name) == 'PLATINUM'}"
+                      class="badge badge-platinum"
+                      th:text="${membership.membershipType.displayName}">Platinum</span>
+                <span th:unless="${#strings.toUpperCase(membership.membershipType.name) == 'SILVER' or #strings.toUpperCase(membership.membershipType.name) == 'GOLD' or #strings.toUpperCase(membership.membershipType.name) == 'PLATINUM'}"
+                      class="badge badge-active"
+                      th:text="${membership.membershipType.displayName}">Custom</span>
+              </th:block>
+            </th:block>
+            <span th:unless="${userMembershipMap.containsKey(u.id)}" style="color: #9ca3af;">-</span>
           </td>
           <td th:text="${#temporals.format(u.createdAt, 'yyyy-MM-dd')}">2024-01-01</td>
           <td>
             <div class="btn-group">
-              <!-- Edit Button with Icon -->
-              <a th:href="@{/admin/users/edit/{id}(id=${u.id})}"
-                class="btn btn-outline btn-sm"
-                title="Edit">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                  <path d="M18.5 2.5l3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                </svg>
-              </a>
+              <!-- Edit removed: admin not allowed to edit users from UI -->
 
               <!-- Delete Button with Icon -->
               <form th:action="@{/admin/users/delete/{id}(id=${u.id})}"
@@ -329,8 +259,8 @@
             </div>
           </td>
         </tr>
-        <tr th:if="${#lists.isEmpty(users)}">
-          <td colspan="5" style="text-align: center; padding: 40px; color: #9ca3af;">
+        <tr th:if="${#lists.isEmpty(userList)}">
+          <td colspan="6" style="text-align: center; padding: 40px; color: #9ca3af;">
             No users found. Create one to get started!
           </td>
         </tr>
