@@ -238,15 +238,7 @@
           <td th:text="${#temporals.format(u.createdAt, 'yyyy-MM-dd')}">2024-01-01</td>
           <td>
             <div class="btn-group">
-              <!-- Edit Button with Icon -->
-              <a th:href="@{/admin/users/edit/{id}(id=${u.id})}"
-                class="btn btn-outline btn-sm"
-                title="Edit">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                  <path d="M18.5 2.5l3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                </svg>
-              </a>
+              <!-- Edit removed: admin not allowed to edit users from UI -->
 
               <!-- Delete Button with Icon -->
               <form th:action="@{/admin/users/delete/{id}(id=${u.id})}"
