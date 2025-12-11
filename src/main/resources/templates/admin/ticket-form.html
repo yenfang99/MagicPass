@@ -310,23 +310,29 @@
             <span>Order Code</span>
             <span class="required-mark">*</span>
           </label>
-          <input class="enhanced-input" type="text" id="orderCode" th:field="*{orderCode}"
-                 placeholder="e.g., ORD-001" required
-                 style="font-family: monospace; font-weight: 600;"/>
+             <input class="enhanced-input" type="text" id="orderCode" th:field="*{orderCode}"
+               placeholder="e.g., OD0001" required pattern="^OD[0-9]{4}$"
+               title="Format: OD followed by 4 digits, e.g. OD0001"
+               style="font-family: monospace; font-weight: 600;"/>
           <div class="field-hint">
-            <span>Unique order identifier</span>
+            <span>Unique order identifier (format: OD0000)</span>
           </div>
         </div>
 
         <div class="form-field">
           <label class="field-label" for="userId">
-            <span>User ID</span>
+            <span>User</span>
             <span class="required-mark">*</span>
           </label>
-          <input class="enhanced-input" type="number" id="userId" th:field="*{userId}"
-                 placeholder="e.g., 101" required/>
+          <select class="enhanced-input" id="userId" th:field="*{userId}" required style="cursor: pointer;">
+            <option value="" th:if="${ticket.userId == null}">-- Select user --</option>
+            <option th:each="u : ${users}"
+                    th:value="${u.id}"
+                    th:selected="${ticket.userId} == ${u.id}"
+                    th:text="${u.id + ' — ' + u.email}"></option>
+          </select>
           <div class="field-hint">
-            <span>Customer user ID</span>
+            <span>Select an existing user (cannot type arbitrary ID)</span>
           </div>
         </div>
 
@@ -409,8 +415,8 @@
           <div class="input-with-prefix">
             <span class="input-prefix">RM</span>
             <input class="enhanced-input" type="number" id="total" th:field="*{total}"
-                   step="0.01" min="0" placeholder="0.00" required
-                   style="padding-left: 46px; font-weight: 600;"/>
+                   step="0.01" min="0" placeholder="0.00" required readonly
+                   style="padding-left: 46px; font-weight: 600; background:#f8fafc;"/>
           </div>
           <div class="field-hint">
             <span>Total before tax</span>
@@ -424,9 +430,9 @@
           </label>
           <div class="input-with-prefix">
             <span class="input-prefix">RM</span>
-            <input class="enhanced-input" type="number" id="tax" th:field="*{tax}"
-                   step="0.01" min="0" placeholder="0.00" required
-                   style="padding-left: 46px; font-weight: 600;"/>
+                 <input class="enhanced-input" type="number" id="tax" th:field="*{tax}"
+                   step="0.01" min="0" placeholder="0.00" required readonly
+                   style="padding-left: 46px; font-weight: 600; background:#f8fafc;"/>
           </div>
           <div class="field-hint">
             <span>Tax amount</span>
@@ -440,9 +446,9 @@
           </label>
           <div class="input-with-prefix">
             <span class="input-prefix">RM</span>
-            <input class="enhanced-input" type="number" id="grandTotal" th:field="*{grandTotal}"
-                   step="0.01" min="0" placeholder="0.00" required
-                   style="padding-left: 46px; font-weight: 600; font-size: 16px; border-color: var(--primary);"/>
+                 <input class="enhanced-input" type="number" id="grandTotal" th:field="*{grandTotal}"
+                   step="0.01" min="0" placeholder="0.00" required readonly
+                   style="padding-left: 46px; font-weight: 600; font-size: 16px; border-color: var(--primary); background:#f1f5f9;"/>
           </div>
           <div class="field-hint">
             <span>Final amount payable</span>
@@ -483,6 +489,69 @@
     </form>
   </div>
 </main>
+
+<script>
+  (function(){
+    const ADULT = 370.0, STUDENT = 320.0, CHILD = 250.0, TAX_RATE = 0.06;
+
+    const adultEl = document.getElementById('adultQty');
+    const studentEl = document.getElementById('studentQty');
+    const childEl = document.getElementById('childQty');
+    const totalEl = document.getElementById('total');
+    const taxEl = document.getElementById('tax');
+    const grandEl = document.getElementById('grandTotal');
+    const form = document.querySelector('form[th\\:action]') || document.querySelector('form');
+    const orderCodeEl = document.getElementById('orderCode');
+    const userEl = document.getElementById('userId');
+
+    function toIntSafe(v){
+      const n = parseInt(v, 10);
+      return isNaN(n) || n < 0 ? 0 : n;
+    }
+
+    function computePrices(){
+      const a = toIntSafe(adultEl && adultEl.value);
+      const s = toIntSafe(studentEl && studentEl.value);
+      const c = toIntSafe(childEl && childEl.value);
+      const subtotal = a*ADULT + s*STUDENT + c*CHILD;
+      const tax = subtotal * TAX_RATE;
+      const grand = subtotal + tax;
+      if(totalEl) totalEl.value = subtotal.toFixed(2);
+      if(taxEl) taxEl.value = tax.toFixed(2);
+      if(grandEl) grandEl.value = grand.toFixed(2);
+    }
+
+    function validateForm(e){
+      const a = toIntSafe(adultEl && adultEl.value);
+      const s = toIntSafe(studentEl && studentEl.value);
+      const c = toIntSafe(childEl && childEl.value);
+      const totalTickets = a + s + c;
+      const orderCode = orderCodeEl ? (orderCodeEl.value || '') : '';
+      const orderOk = /^OD[0-9]{4}$/.test(orderCode);
+      const userOk = userEl && userEl.value !== '';
+      let msgs = [];
+      if (!orderOk) msgs.push('Order Code must match format OD0000.');
+      if (!userOk) msgs.push('Please select an existing user.');
+      if (totalTickets < 1) msgs.push('At least one ticket must be selected.');
+      if (msgs.length){
+        e.preventDefault();
+        alert(msgs.join('\n'));
+        return false;
+      }
+      computePrices();
+      return true;
+    }
+
+    [adultEl, studentEl, childEl].forEach(el => {
+      if (!el) return;
+      el.setAttribute('min', '0');
+      el.addEventListener('input', computePrices);
+    });
+
+    if (form) form.addEventListener('submit', validateForm);
+    window.addEventListener('load', computePrices);
+  })();
+</script>
 
 </body>
 </html>
