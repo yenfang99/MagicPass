@@ -30,6 +30,9 @@ public class Order {
   private double tax;
   private double grandTotal;
 
+  private Double cashReceived;
+  private Double cashChange;
+
   private String paymentMethod; // CASH, BANK, CARD (optional now)
   private String status;        // PREVIEW, PAID
 
@@ -73,6 +76,12 @@ public class Order {
 
   public double getGrandTotal() { return grandTotal; }
   public void setGrandTotal(double grandTotal) { this.grandTotal = grandTotal; }
+
+  public Double getCashReceived() { return cashReceived; }
+  public void setCashReceived(Double cashReceived) { this.cashReceived = cashReceived; }
+
+  public Double getCashChange() { return cashChange; }
+  public void setCashChange(Double cashChange) { this.cashChange = cashChange; }
 
   public String getPaymentMethod() { return paymentMethod; }
   public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }

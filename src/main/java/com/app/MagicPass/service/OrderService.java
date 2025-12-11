@@ -20,7 +20,8 @@ public class OrderService {
     return orderRepository.findByUserIdOrderByCreatedAtDesc(userId);
   }
 
-  public Order createPaidOrder(CheckoutRequest req, PricingBreakdown pricing, String paymentMethod) {
+  public Order createPaidOrder(CheckoutRequest req, PricingBreakdown pricing, String paymentMethod,
+                               Double cashReceived, Double cashChange) {
     Order order = new Order();
     order.setUserId(req.getUserId());
     order.setAdultQty(req.getAdultQty());
@@ -35,6 +36,8 @@ public class OrderService {
 
     order.setStatus("PAID");
     order.setPaymentMethod(paymentMethod);
+    order.setCashReceived(cashReceived);
+    order.setCashChange(cashChange);
 
     return orderRepository.save(order);
   }

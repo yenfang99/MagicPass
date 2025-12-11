@@ -108,6 +108,7 @@ public class PaymentController {
 
   @PostMapping("/payment/confirm")
   public String confirm(@RequestParam("paymentMethod") String paymentMethod,
+                        @RequestParam(value = "cashReceived", required = false) Double cashReceived,
                         HttpSession session,
                         RedirectAttributes ra) {
 
@@ -137,9 +138,38 @@ public class PaymentController {
     // Enforce purchaser identity from session
     req.setUserId(currentUser.getId());
 
+    String normalizedMethod = paymentMethod == null ? "STRIPE" : paymentMethod.trim().toUpperCase();
+
     boolean isMember = membershipService.getActiveMembershipWithActiveType(currentUser.getId()) != null;
     // Recalculate pricing (don't trust session for money)
     pricing = pricingService.calculate(req, isMember);
+
+    // Cash flow: validate amount, record order, bypass Stripe
+    if ("CASH".equals(normalizedMethod)) {
+      if (cashReceived == null) {
+        ra.addFlashAttribute("error", "Please enter the cash amount received.");
+        return "redirect:/payment";
+      }
+      if (cashReceived < pricing.getGrandTotal()) {
+        ra.addFlashAttribute("error", "Cash received is less than the grand total.");
+        return "redirect:/payment";
+      }
+
+      double change = cashReceived - pricing.getGrandTotal();
+      var order = orderService.createPaidOrder(req, pricing, "CASH", cashReceived, change);
+
+      // Clear session since order is recorded
+      session.removeAttribute("previewReq");
+      session.removeAttribute("previewPricing");
+      session.removeAttribute("stripeSessionId");
+
+      return "redirect:/receipt/" + order.getId();
+    }
+
+    if (!"STRIPE".equals(normalizedMethod)) {
+      ra.addFlashAttribute("error", "Unsupported payment method.");
+      return "redirect:/payment";
+    }
 
     try {
       // Create Stripe checkout session
@@ -203,7 +233,7 @@ public class PaymentController {
       }
 
       // Create the order after successful payment
-      var order = orderService.createPaidOrder(req, pricing, paymentMethod);
+      var order = orderService.createPaidOrder(req, pricing, paymentMethod, null, null);
 
       // Clear session
       session.removeAttribute("previewReq");
