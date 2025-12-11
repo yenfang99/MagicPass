@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
 import com.app.MagicPass.dto.CheckoutRequest;
 import com.app.MagicPass.dto.PricingBreakdown;
@@ -63,7 +64,12 @@ class PaymentControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
+        viewResolver.setPrefix("/templates/");
+        viewResolver.setSuffix(".html");
+        mockMvc = MockMvcBuilders.standaloneSetup(controller)
+                .setViewResolvers(viewResolver)
+                .build();
         session = new MockHttpSession();
 
         req = new CheckoutRequest();
