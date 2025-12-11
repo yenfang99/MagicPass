@@ -68,7 +68,7 @@
           <div class="price-label muted">Total</div>
           <div class="price-value num" th:text="${pricing.total}"></div>
         </div>
-        <div class="price-row">
+        <div class="price-row" th:if="${pricing.discount != null and pricing.discount > 0}">
           <div class="price-label muted">
             Discount
             <span th:if="${pricing.discountRate > 0}" class="badge badge-soft badge-primary"
