@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -315,4 +316,169 @@ class MembershipControllerTest {
                 .andExpect(flash().attributeExists("error"));
     }
 
+    // DIRECT CONTROLLER TESTS (bypass MockMvc view resolution issues)
+
+    @Test
+    void testMembershipPage_DirectCall_WithActiveMembership() {
+        // Given
+        session.setAttribute("currentUser", user);
+        org.springframework.ui.ExtendedModelMap model = new org.springframework.ui.ExtendedModelMap();
+
+        when(membershipTypeService.getActiveMembershipTypes()).thenReturn(java.util.List.of(silverType));
+        when(membershipService.getActiveMembershipWithActiveType(1L)).thenReturn(activeSilverMembership);
+
+        // When
+        String viewName = membershipController.membershipPage(session, model);
+
+        // Then
+        assertEquals("membership", viewName);
+        assertEquals(java.util.List.of(silverType), model.get("membershipTypes"));
+        assertEquals(activeSilverMembership, model.get("currentMembership"));
+        assertEquals(silverType, model.get("currentMembershipType"));
+        assertEquals(user, model.get("currentUser"));
+        assertEquals(1, model.get("currentTierLevel"));
+
+        verify(membershipTypeService, times(1)).getActiveMembershipTypes();
+        verify(membershipService, times(1)).getActiveMembershipWithActiveType(1L);
+    }
+
+    @Test
+    void testMembershipPage_DirectCall_NoActiveMembership() {
+        // Given
+        session.setAttribute("currentUser", user);
+        org.springframework.ui.ExtendedModelMap model = new org.springframework.ui.ExtendedModelMap();
+
+        when(membershipTypeService.getActiveMembershipTypes()).thenReturn(java.util.List.of(silverType));
+        when(membershipService.getActiveMembershipWithActiveType(1L)).thenReturn(null);
+
+        // When
+        String viewName = membershipController.membershipPage(session, model);
+
+        // Then
+        assertEquals("membership", viewName);
+        assertNull(model.get("currentMembership"));
+        assertNull(model.get("currentMembershipType"));
+        assertEquals(0, model.get("currentTierLevel"));
+    }
+
+    @Test
+    void testConfirmation_DirectCall_WithLineBreakDescription() {
+        // Given
+        silverType.setDescription("Benefit 1\nBenefit 2\nBenefit 3");
+        org.springframework.ui.ExtendedModelMap model = new org.springframework.ui.ExtendedModelMap();
+        org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap ra =
+            new org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap();
+
+        when(membershipService.getMembershipByMembershipId("MEM-12345678"))
+                .thenReturn(activeSilverMembership);
+
+        // When
+        String viewName = membershipController.confirmation("MEM-12345678", model, ra);
+
+        // Then
+        assertEquals("membership-confirmation", viewName);
+        assertEquals("MEM-12345678", model.get("membershipId"));
+        assertEquals("Silver Membership", model.get("tier"));
+        assertEquals(99.99, model.get("price"));
+        assertEquals(5.0, model.get("discountRate"));
+
+        @SuppressWarnings("unchecked")
+        java.util.List<String> benefits = (java.util.List<String>) model.get("benefitsList");
+        assertEquals(3, benefits.size());
+        assertEquals("Benefit 1", benefits.get(0));
+        assertEquals("Benefit 2", benefits.get(1));
+        assertEquals("Benefit 3", benefits.get(2));
+    }
+
+    @Test
+    void testConfirmation_DirectCall_WithSentenceDescription() {
+        // Given
+        silverType.setDescription("First benefit. Second benefit. Third benefit.");
+        org.springframework.ui.ExtendedModelMap model = new org.springframework.ui.ExtendedModelMap();
+        org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap ra =
+            new org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap();
+
+        when(membershipService.getMembershipByMembershipId("MEM-12345678"))
+                .thenReturn(activeSilverMembership);
+
+        // When
+        String viewName = membershipController.confirmation("MEM-12345678", model, ra);
+
+        // Then
+        assertEquals("membership-confirmation", viewName);
+
+        @SuppressWarnings("unchecked")
+        java.util.List<String> benefits = (java.util.List<String>) model.get("benefitsList");
+        assertEquals(3, benefits.size());
+        assertTrue(benefits.get(0).contains("First benefit"));
+        assertTrue(benefits.get(1).contains("Second benefit"));
+        assertTrue(benefits.get(2).contains("Third benefit"));
+    }
+
+    @Test
+    void testConfirmation_DirectCall_WithEmptyDescription() {
+        // Given
+        silverType.setDescription("");
+        org.springframework.ui.ExtendedModelMap model = new org.springframework.ui.ExtendedModelMap();
+        org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap ra =
+            new org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap();
+
+        when(membershipService.getMembershipByMembershipId("MEM-12345678"))
+                .thenReturn(activeSilverMembership);
+
+        // When
+        String viewName = membershipController.confirmation("MEM-12345678", model, ra);
+
+        // Then
+        assertEquals("membership-confirmation", viewName);
+
+        @SuppressWarnings("unchecked")
+        java.util.List<String> benefits = (java.util.List<String>) model.get("benefitsList");
+        assertEquals(0, benefits.size());
+    }
+
+    @Test
+    void testConfirmation_DirectCall_WithNullDescription() {
+        // Given
+        silverType.setDescription(null);
+        org.springframework.ui.ExtendedModelMap model = new org.springframework.ui.ExtendedModelMap();
+        org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap ra =
+            new org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap();
+
+        when(membershipService.getMembershipByMembershipId("MEM-12345678"))
+                .thenReturn(activeSilverMembership);
+
+        // When
+        String viewName = membershipController.confirmation("MEM-12345678", model, ra);
+
+        // Then
+        assertEquals("membership-confirmation", viewName);
+
+        @SuppressWarnings("unchecked")
+        java.util.List<String> benefits = (java.util.List<String>) model.get("benefitsList");
+        assertEquals(0, benefits.size());
+    }
+
+    @Test
+    void testConfirmation_DirectCall_WithSingleLineDescription() {
+        // Given
+        silverType.setDescription("Single benefit only");
+        org.springframework.ui.ExtendedModelMap model = new org.springframework.ui.ExtendedModelMap();
+        org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap ra =
+            new org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap();
+
+        when(membershipService.getMembershipByMembershipId("MEM-12345678"))
+                .thenReturn(activeSilverMembership);
+
+        // When
+        String viewName = membershipController.confirmation("MEM-12345678", model, ra);
+
+        // Then
+        assertEquals("membership-confirmation", viewName);
+
+        @SuppressWarnings("unchecked")
+        java.util.List<String> benefits = (java.util.List<String>) model.get("benefitsList");
+        assertEquals(1, benefits.size());
+        assertEquals("Single benefit only", benefits.get(0));
+    }
 }
