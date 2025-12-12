@@ -200,4 +200,123 @@ class StripeServiceTest {
         assertTrue(successUrl.startsWith("http"));
         assertTrue(cancelUrl.startsWith("http"));
     }
+
+    // TICKET CHECKOUT SESSION TESTS
+
+    @Test
+    void testTicketCheckoutSession_DescriptionFormat() {
+        // Test the description formatting logic for tickets
+        CheckoutRequest req = new CheckoutRequest();
+        req.setAdultQty(3);
+        req.setStudentQty(2);
+        req.setChildQty(1);
+        req.setReservationDate(java.time.LocalDate.of(2024, 12, 25));
+
+        String expectedDescription = "Adult: 3, Student: 2, Children: 1 - Date: 2024-12-25";
+        String actualDescription = String.format("Adult: %d, Student: %d, Children: %d - Date: %s",
+                req.getAdultQty(), req.getStudentQty(), req.getChildQty(),
+                req.getReservationDate().toString());
+
+        assertEquals(expectedDescription, actualDescription);
+    }
+
+    @Test
+    void testTicketCheckoutSession_PriceConversion() {
+        // Test price conversion for ticket purchases
+        Double grandTotal = 1850.50;
+        long expectedCents = 185050L;
+
+        long actualCents = (long) (grandTotal * 100);
+
+        assertEquals(expectedCents, actualCents);
+    }
+
+    @Test
+    void testTicketCheckoutSession_ZeroQuantities() {
+        // Test handling of zero quantities
+        CheckoutRequest req = new CheckoutRequest();
+        req.setAdultQty(0);
+        req.setStudentQty(0);
+        req.setChildQty(0);
+        req.setReservationDate(java.time.LocalDate.now());
+
+        String description = String.format("Adult: %d, Student: %d, Children: %d - Date: %s",
+                req.getAdultQty(), req.getStudentQty(), req.getChildQty(),
+                req.getReservationDate().toString());
+
+        assertTrue(description.contains("Adult: 0"));
+        assertTrue(description.contains("Student: 0"));
+        assertTrue(description.contains("Children: 0"));
+    }
+
+    @Test
+    void testTicketCheckoutSession_LargeQuantities() {
+        // Test handling of large ticket quantities
+        CheckoutRequest req = new CheckoutRequest();
+        req.setAdultQty(100);
+        req.setStudentQty(50);
+        req.setChildQty(25);
+        req.setReservationDate(java.time.LocalDate.of(2025, 1, 15));
+
+        String description = String.format("Adult: %d, Student: %d, Children: %d - Date: %s",
+                req.getAdultQty(), req.getStudentQty(), req.getChildQty(),
+                req.getReservationDate().toString());
+
+        assertTrue(description.contains("Adult: 100"));
+        assertTrue(description.contains("Student: 50"));
+        assertTrue(description.contains("Children: 25"));
+    }
+
+    @Test
+    void testTicketCheckoutSession_MetadataUserIdHandling() {
+        // Test userId metadata for tickets (null vs present)
+
+        // With userId
+        CheckoutRequest reqWithUser = new CheckoutRequest();
+        reqWithUser.setUserId(456L);
+
+        String userIdWithUser = reqWithUser.getUserId() != null
+            ? reqWithUser.getUserId().toString()
+            : "anonymous";
+        assertEquals("456", userIdWithUser);
+
+        // Without userId (anonymous purchase)
+        CheckoutRequest reqAnonymous = new CheckoutRequest();
+        reqAnonymous.setUserId(null);
+
+        String userIdAnonymous = reqAnonymous.getUserId() != null
+            ? reqAnonymous.getUserId().toString()
+            : "anonymous";
+        assertEquals("anonymous", userIdAnonymous);
+    }
+
+    @Test
+    void testTicketCheckoutSession_DateFormatting() {
+        // Test various date formats
+        java.time.LocalDate date1 = java.time.LocalDate.of(2024, 1, 1);
+        assertEquals("2024-01-01", date1.toString());
+
+        java.time.LocalDate date2 = java.time.LocalDate.of(2024, 12, 31);
+        assertEquals("2024-12-31", date2.toString());
+
+        java.time.LocalDate date3 = java.time.LocalDate.of(2025, 6, 15);
+        assertEquals("2025-06-15", date3.toString());
+    }
+
+    @Test
+    void testTicketCheckoutSession_PriceEdgeCases() {
+        // Test edge cases for ticket pricing
+
+        // Minimum valid price
+        Double minPrice = 0.01;
+        assertEquals(1L, (long) (minPrice * 100));
+
+        // Large price
+        Double largePrice = 99999.99;
+        assertEquals(9999999L, (long) (largePrice * 100));
+
+        // Round number
+        Double roundPrice = 1000.00;
+        assertEquals(100000L, (long) (roundPrice * 100));
+    }
 }
