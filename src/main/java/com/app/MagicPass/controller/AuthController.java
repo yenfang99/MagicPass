@@ -4,38 +4,52 @@ import com.app.MagicPass.model.Staff;
 import com.app.MagicPass.model.User;
 import com.app.MagicPass.service.AuthService;
 import com.app.MagicPass.service.StaffService;
+import com.app.MagicPass.service.UserService;
+
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import com.app.MagicPass.service.UserService;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @Controller
 public class AuthController {
 
     private final AuthService authService;
     private final StaffService staffService;
-    private final UserService userService;   // 👈 add this
+    private final UserService userService;
 
     public AuthController(AuthService authService,
                           StaffService staffService,
-                          UserService userService) {   // 👈 add param
+                          UserService userService) {
         this.authService = authService;
         this.staffService = staffService;
-        this.userService = userService;      // 👈 assign
+        this.userService = userService;
     }
 
-    // ---------- REGISTER (users only) ----------
+    // ---------- REGISTER ----------
     @GetMapping("/register")
     public String showRegister() {
         return "register";
     }
 
     @PostMapping("/register")
-    public String doRegister(@RequestParam String email,
+    public String doRegister(@RequestParam String name,
+                             @RequestParam String email,
+                             @RequestParam String phone,
+                             @RequestParam String gender,
+                             @RequestParam String birthday, // yyyy-MM-dd
                              @RequestParam String password,
                              @RequestParam("confirmPassword") String confirmPassword,
                              Model model) {
+
+        // keep typed values (so user no need retype if error)
+        model.addAttribute("name", name);
+        model.addAttribute("email", email);
+        model.addAttribute("phone", phone);
+        model.addAttribute("gender", gender);
+        model.addAttribute("birthday", birthday);
 
         if (!password.equals(confirmPassword)) {
             model.addAttribute("error", "Passwords do not match.");
@@ -43,11 +57,18 @@ public class AuthController {
         }
 
         try {
-            authService.register(email, password);
+            LocalDate bday = LocalDate.parse(birthday);
+
+            authService.register(name, email, password, bday, gender, phone);
+
             model.addAttribute("success", "Registration successful. Please log in.");
             return "login";
+
         } catch (IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
+            return "register";
+        } catch (Exception ex) {
+            model.addAttribute("error", "Invalid birthday format.");
             return "register";
         }
     }
@@ -66,18 +87,16 @@ public class AuthController {
 
         String normalized = email.trim().toLowerCase();
 
-        // ---- 1. Staff / Boss login (staff_accounts table) ----
+        // 1) staff/boss
         if (staffService.isStaffEmail(normalized)) {
             try {
                 Staff staff = staffService.loginStaff(normalized, password);
 
-                // store staff in session
                 session.setAttribute("currentStaff", staff);
                 session.setAttribute("currentUser", null);
                 session.setAttribute("isStaff", true);
                 session.setAttribute("isBoss", staff.isBoss());
 
-                // All staff (including boss) go to admin dashboard
                 return "redirect:/admin/dashboard";
 
             } catch (IllegalArgumentException ex) {
@@ -86,7 +105,7 @@ public class AuthController {
             }
         }
 
-        // ---- 2. Normal user login (users table) ----
+        // 2) normal user
         try {
             User user = authService.login(normalized, password);
 
@@ -95,9 +114,7 @@ public class AuthController {
             session.setAttribute("isStaff", false);
             session.setAttribute("isBoss", false);
 
-            model.addAttribute("success",
-                    "Login successful. Welcome " + user.getEmail() + "!");
-            return "home";
+            return "redirect:/"; // better than returning "home" directly
 
         } catch (IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
@@ -113,20 +130,16 @@ public class AuthController {
         return "login";
     }
 
+    // ---------- ACCOUNT ----------
     @GetMapping("/account")
-public String viewAccount(HttpSession session, Model model) {
-    // Get logged-in user from session
-    User currentUser = (User) session.getAttribute("currentUser");
+    public String viewAccount(HttpSession session, Model model) {
+        User currentUser = (User) session.getAttribute("currentUser");
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
 
-    if (currentUser == null) {
-        // Not logged in – redirect to login
-        return "redirect:/login";
+        User userFromDb = userService.getUserById(currentUser.getId());
+        model.addAttribute("user", userFromDb);
+        return "user/account-detail";
     }
-
-    // Optional: re-fetch from DB to make sure data is fresh
-    User userFromDb = userService.getUserById(currentUser.getId());
-
-    model.addAttribute("user", userFromDb);
-    return "user/account-detail";   // this will be your Thymeleaf page
-}
 }

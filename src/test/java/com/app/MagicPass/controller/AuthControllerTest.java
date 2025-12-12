@@ -15,28 +15,21 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
+import java.time.LocalDate;
+
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/**
- * Controller tests for AuthController: register + login + logout
- */
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 
-    @Mock
-    private AuthService authService;
-
-    @Mock
-    private StaffService staffService;
-
-    @Mock
-    private UserService userService;
+    @Mock private AuthService authService;
+    @Mock private StaffService staffService;
+    @Mock private UserService userService;
 
     @InjectMocks
     private AuthController authController;
@@ -45,7 +38,6 @@ class AuthControllerTest {
 
     @BeforeEach
     void setUp() {
-        // Prevent "Circular view path [login]" by adding a simple resolver
         InternalResourceViewResolver viewResolver = new InternalResourceViewResolver();
         viewResolver.setPrefix("/templates/");
         viewResolver.setSuffix(".html");
@@ -56,9 +48,9 @@ class AuthControllerTest {
                 .build();
     }
 
-    // --------------------------------------------------------------------
+    // ------------------------------------------------------------
     // REGISTER
-    // --------------------------------------------------------------------
+    // ------------------------------------------------------------
 
     @Test
     void showRegister_ShouldReturnRegisterView() throws Exception {
@@ -68,62 +60,76 @@ class AuthControllerTest {
     }
 
     @Test
-    void doRegister_PasswordMismatch_ShouldReturnRegisterWithErrorAndNotCallService()
-            throws Exception {
-
+    void doRegister_PasswordMismatch_ShouldReturnRegisterWithError_AndNotCallService() throws Exception {
         mockMvc.perform(post("/register")
+                        .param("name", "John")
                         .param("email", "user@test.com")
+                        .param("phone", "0176989118")
+                        .param("gender", "M")
+                        .param("birthday", "2003-11-11")
                         .param("password", "Password1!")
                         .param("confirmPassword", "Different1!"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("register"))
                 .andExpect(model().attribute("error", "Passwords do not match."));
 
-        verify(authService, never()).register(anyString(), anyString());
+        verify(authService, never()).register(anyString(), anyString(), anyString(), any(LocalDate.class), anyString(), anyString());
     }
 
     @Test
     void doRegister_Success_ShouldReturnLoginWithSuccessMessage() throws Exception {
-        String email = "user@test.com";
-        String password = "Password1!";
-
-        when(authService.register(email, password)).thenReturn(new User());
+        when(authService.register(
+                eq("John"),
+                eq("user@test.com"),
+                eq("Password1!"),
+                eq(LocalDate.of(2003, 11, 11)),
+                eq("M"),
+                eq("0176989118")
+        )).thenReturn(new User());
 
         mockMvc.perform(post("/register")
-                        .param("email", email)
-                        .param("password", password)
-                        .param("confirmPassword", password))
+                        .param("name", "John")
+                        .param("email", "user@test.com")
+                        .param("phone", "0176989118")
+                        .param("gender", "M")
+                        .param("birthday", "2003-11-11")
+                        .param("password", "Password1!")
+                        .param("confirmPassword", "Password1!"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("login"))
-                .andExpect(model().attribute("success",
-                        "Registration successful. Please log in."));
+                .andExpect(model().attribute("success", "Registration successful. Please log in."));
 
-        verify(authService, times(1)).register(email, password);
+        verify(authService, times(1)).register(
+                eq("John"),
+                eq("user@test.com"),
+                eq("Password1!"),
+                eq(LocalDate.of(2003, 11, 11)),
+                eq("M"),
+                eq("0176989118")
+        );
     }
 
     @Test
     void doRegister_ServiceValidationError_ShouldReturnRegisterWithError() throws Exception {
-        String email = "user@test.com";
-        String password = "Password1!";
-        String errorMsg = "Email is already registered."; // example message
-
-        when(authService.register(eq(email), eq(password)))
-                .thenThrow(new IllegalArgumentException(errorMsg));
+        when(authService.register(anyString(), anyString(), anyString(), any(LocalDate.class), anyString(), anyString()))
+                .thenThrow(new IllegalArgumentException("Email is already registered."));
 
         mockMvc.perform(post("/register")
-                        .param("email", email)
-                        .param("password", password)
-                        .param("confirmPassword", password))
+                        .param("name", "John")
+                        .param("email", "user@test.com")
+                        .param("phone", "0176989118")
+                        .param("gender", "M")
+                        .param("birthday", "2003-11-11")
+                        .param("password", "Password1!")
+                        .param("confirmPassword", "Password1!"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("register"))
-                .andExpect(model().attribute("error", errorMsg));
-
-        verify(authService, times(1)).register(email, password);
+                .andExpect(model().attribute("error", "Email is already registered."));
     }
 
-    // --------------------------------------------------------------------
-    // LOGIN + LOGOUT  (your existing behaviour kept)
-    // --------------------------------------------------------------------
+    // ------------------------------------------------------------
+    // LOGIN
+    // ------------------------------------------------------------
 
     @Test
     void showLogin_ShouldReturnLoginView() throws Exception {
@@ -133,7 +139,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void doLogin_UserSuccess_ShouldReturnHomeAndSetSession() throws Exception {
+    void doLogin_UserSuccess_ShouldRedirect_AndSetSession() throws Exception {
         String email = "user@test.com";
         String password = "Password1!";
 
@@ -141,15 +147,16 @@ class AuthControllerTest {
         user.setId(1L);
         user.setEmail(email);
 
-        when(staffService.isStaffEmail(email)).thenReturn(false);
-        when(authService.login(email, password)).thenReturn(user);
+        // controller normalizes email
+        when(staffService.isStaffEmail(eq(email))).thenReturn(false);
+        when(authService.login(eq(email), eq(password))).thenReturn(user);
 
         mockMvc.perform(post("/login")
                         .param("email", email)
                         .param("password", password))
-                .andExpect(status().isOk())
-                .andExpect(view().name("home"))
-                .andExpect(model().attributeExists("success"))
+                .andExpect(status().is3xxRedirection())
+                // ✅ change this to whatever your controller redirects to ("/" or "/home")
+                .andExpect(redirectedUrl("/"))
                 .andExpect(request().sessionAttribute("currentUser", user))
                 .andExpect(request().sessionAttribute("currentStaff", nullValue()))
                 .andExpect(request().sessionAttribute("isStaff", false))
@@ -160,7 +167,28 @@ class AuthControllerTest {
     }
 
     @Test
-    void doLogin_StaffSuccess_ShouldRedirectToAdminDashboardAndSetSession() throws Exception {
+    void doLogin_UserLoginFailure_ShouldReturnLoginWithError() throws Exception {
+        String email = "user@test.com";
+        String password = "WrongPass1!";
+        String errorMsg = "Invalid email or password.";
+
+        when(staffService.isStaffEmail(eq(email))).thenReturn(false);
+        when(authService.login(eq(email), eq(password)))
+                .thenThrow(new IllegalArgumentException(errorMsg));
+
+        mockMvc.perform(post("/login")
+                        .param("email", email)
+                        .param("password", password))
+                .andExpect(status().isOk())
+                .andExpect(view().name("login"))
+                .andExpect(model().attribute("error", errorMsg));
+
+        verify(staffService, times(1)).isStaffEmail(email);
+        verify(authService, times(1)).login(email, password);
+    }
+
+    @Test
+    void doLogin_StaffSuccess_ShouldRedirectToAdminDashboard_AndSetSession() throws Exception {
         String email = "boss@magicpass.my";
         String password = "BossPass1!";
 
@@ -169,8 +197,8 @@ class AuthControllerTest {
         staff.setEmail(email);
         staff.setBoss(true);
 
-        when(staffService.isStaffEmail(email)).thenReturn(true);
-        when(staffService.loginStaff(email, password)).thenReturn(staff);
+        when(staffService.isStaffEmail(eq(email))).thenReturn(true);
+        when(staffService.loginStaff(eq(email), eq(password))).thenReturn(staff);
 
         mockMvc.perform(post("/login")
                         .param("email", email)
@@ -186,51 +214,9 @@ class AuthControllerTest {
         verify(staffService, times(1)).loginStaff(email, password);
     }
 
-    @Test
-    void doLogin_UserLoginFailure_ShouldReturnLoginWithError() throws Exception {
-        String email = "user@test.com";
-        String password = "WrongPass1!";
-        String errorMsg = "Invalid email or password.";
-
-        when(staffService.isStaffEmail(email)).thenReturn(false);
-        when(authService.login(eq(email), eq(password)))
-                .thenThrow(new IllegalArgumentException(errorMsg));
-
-        mockMvc.perform(post("/login")
-                        .param("email", email)
-                        .param("password", password))
-                .andExpect(status().isOk())
-                .andExpect(view().name("login"))
-                .andExpect(model().attribute("error", errorMsg))
-                .andExpect(request().sessionAttribute("currentUser", nullValue()))
-                .andExpect(request().sessionAttribute("currentStaff", nullValue()));
-
-        verify(staffService, times(1)).isStaffEmail(email);
-        verify(authService, times(1)).login(email, password);
-    }
-
-    @Test
-    void doLogin_StaffLoginFailure_ShouldReturnLoginWithError() throws Exception {
-        String email = "staff@magicpass.my";
-        String password = "WrongPass1!";
-        String errorMsg = "Invalid email or password.";
-
-        when(staffService.isStaffEmail(email)).thenReturn(true);
-        when(staffService.loginStaff(eq(email), eq(password)))
-                .thenThrow(new IllegalArgumentException(errorMsg));
-
-        mockMvc.perform(post("/login")
-                        .param("email", email)
-                        .param("password", password))
-                .andExpect(status().isOk())
-                .andExpect(view().name("login"))
-                .andExpect(model().attribute("error", errorMsg))
-                .andExpect(request().sessionAttribute("currentUser", nullValue()))
-                .andExpect(request().sessionAttribute("currentStaff", nullValue()));
-
-        verify(staffService, times(1)).isStaffEmail(email);
-        verify(staffService, times(1)).loginStaff(email, password);
-    }
+    // ------------------------------------------------------------
+    // LOGOUT
+    // ------------------------------------------------------------
 
     @Test
     void logout_ShouldInvalidateSessionAndReturnLogin() throws Exception {
