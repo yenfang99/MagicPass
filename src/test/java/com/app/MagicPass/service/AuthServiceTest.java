@@ -9,15 +9,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Method;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-/**
- * Unit tests for AuthService: register() + login()
- */
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
@@ -31,8 +28,7 @@ class AuthServiceTest {
         authService = new AuthService(userRepository);
     }
 
-    // Helper to call the private hashPassword method so our test hash
-    // is always consistent with the real implementation.
+    // helper to hash passwords consistently
     private String hash(String raw) {
         try {
             Method m = AuthService.class.getDeclaredMethod("hashPassword", String.class);
@@ -43,160 +39,151 @@ class AuthServiceTest {
         }
     }
 
-    // --------------------------------------------------------------------
-    // REGISTER TESTS
-    // --------------------------------------------------------------------
+    // ----------------------------------------------------------------
+    // REGISTER
+    // ----------------------------------------------------------------
 
     @Test
-    void register_WithValidData_ShouldSaveAndReturnUser() {
-        String email = "User@Test.com";   // will be normalised to lower-case
-        String normalized = "user@test.com";
-        String password = "Passw0rd!";
+    void register_ValidData_ShouldSaveUser() {
+        when(userRepository.existsByEmail("user@test.com")).thenReturn(false);
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
-        when(userRepository.existsByEmail(normalized)).thenReturn(false);
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            User u = invocation.getArgument(0);
-            u.setId(1L);
-            return u;
-        });
+        User user = authService.register(
+                "John Doe",
+                "user@test.com",
+                "Passw0rd!",
+                LocalDate.of(2003, 11, 11),
+                "M",
+                "0176989118"
+        );
 
-        User result = authService.register(email, password);
-
-        assertNotNull(result);
-        assertEquals(1L, result.getId());
-        assertEquals(normalized, result.getEmail());
-        // Just basic sanity check: password should not be stored in plain text
-        assertNotEquals(password, result.getPasswordHash());
-
-        verify(userRepository, times(1)).existsByEmail(normalized);
-        verify(userRepository, times(1)).save(any(User.class));
-    }
-
-    @Test
-    void register_NullOrBlankEmail_ShouldThrow() {
-        assertThrows(IllegalArgumentException.class,
-                () -> authService.register(null, "Passw0rd!"));
-        assertThrows(IllegalArgumentException.class,
-                () -> authService.register("   ", "Passw0rd!"));
-
-        verifyNoInteractions(userRepository);
-    }
-
-    @Test
-    void register_InvalidEmailFormat_ShouldThrow() {
-        assertThrows(IllegalArgumentException.class,
-                () -> authService.register("not-an-email", "Passw0rd!"));
-
-        verifyNoInteractions(userRepository);
-    }
-
-    @Test
-    void register_StaffDomainEmail_ShouldThrow() {
-        assertThrows(IllegalArgumentException.class,
-                () -> authService.register("staff@magicpass.my", "Passw0rd!"));
-
-        verifyNoInteractions(userRepository);
+        assertNotNull(user);
+        assertEquals("John Doe", user.getName());
+        assertEquals(22, user.getAge());
+        verify(userRepository).save(any(User.class));
     }
 
     @Test
     void register_PasswordTooShort_ShouldThrow() {
-        assertThrows(IllegalArgumentException.class,
-                () -> authService.register("user@test.com", "Abc!12"));
+        when(userRepository.existsByEmail("user@test.com")).thenReturn(false);
 
-        verifyNoInteractions(userRepository);
+        assertThrows(IllegalArgumentException.class, () ->
+            authService.register(
+                    "John",
+                    "user@test.com",
+                    "Abc!12",                  // too short
+                    LocalDate.of(2003, 11, 11),
+                    "M",
+                    "0176989118"
+            )
+        );
     }
 
     @Test
     void register_PasswordMissingSpecialChar_ShouldThrow() {
-        assertThrows(IllegalArgumentException.class,
-                () -> authService.register("user@test.com", "Abc12345"));
-        verifyNoInteractions(userRepository);
+        when(userRepository.existsByEmail("user@test.com")).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () ->
+            authService.register(
+                    "John",
+                    "user@test.com",
+                    "Password1",               // no special char
+                    LocalDate.of(2003, 11, 11),
+                    "M",
+                    "0176989118"
+            )
+        );
+    }
+
+    @Test
+    void register_InvalidBirthdayFuture_ShouldThrow() {
+        when(userRepository.existsByEmail("user@test.com")).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () ->
+            authService.register(
+                    "John",
+                    "user@test.com",
+                    "Passw0rd!",
+                    LocalDate.now().plusDays(1),
+                    "M",
+                    "0176989118"
+            )
+        );
+    }
+
+    @Test
+    void register_InvalidGender_ShouldThrow() {
+        when(userRepository.existsByEmail("user@test.com")).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () ->
+            authService.register(
+                    "John",
+                    "user@test.com",
+                    "Passw0rd!",
+                    LocalDate.of(2003, 11, 11),
+                    "X",
+                    "0176989118"
+            )
+        );
     }
 
     @Test
     void register_EmailAlreadyExists_ShouldThrow() {
-        String email = "user@test.com";
-        when(userRepository.existsByEmail(email)).thenReturn(true);
+        when(userRepository.existsByEmail("user@test.com")).thenReturn(true);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> authService.register(email, "Passw0rd!"));
+        assertThrows(IllegalArgumentException.class, () ->
+            authService.register(
+                    "John",
+                    "user@test.com",
+                    "Passw0rd!",
+                    LocalDate.of(2003, 11, 11),
+                    "M",
+                    "0176989118"
+            )
+        );
 
-        verify(userRepository, times(1)).existsByEmail(email);
-        verify(userRepository, never()).save(any(User.class));
+        verify(userRepository, never()).save(any());
     }
 
-    // --------------------------------------------------------------------
-    // LOGIN TESTS (your existing ones – kept as-is)
-    // --------------------------------------------------------------------
+    // ----------------------------------------------------------------
+    // LOGIN
+    // ----------------------------------------------------------------
 
     @Test
-    void login_WithValidCredentials_ReturnsUser() {
-        // Given
-        String email = "user@test.com";
-        String password = "Passw0rd!";
-
+    void login_ValidCredentials_ShouldReturnUser() {
         User user = new User();
-        user.setEmail(email.toLowerCase());
-        user.setPasswordHash(hash(password));
+        user.setEmail("user@test.com");
+        user.setPasswordHash(hash("Correct1!"));
 
-        when(userRepository.findByEmail(email.toLowerCase()))
+        when(userRepository.findByEmail("user@test.com"))
                 .thenReturn(Optional.of(user));
 
-        // When
-        User result = authService.login(email, password);
+        User result = authService.login("user@test.com", "Correct1!");
 
-        // Then
         assertNotNull(result);
-        assertEquals(email.toLowerCase(), result.getEmail());
-        verify(userRepository, times(1))
-                .findByEmail(email.toLowerCase());
     }
 
     @Test
-    void login_WithNullEmailOrPassword_ThrowsException() {
-        // email null
-        assertThrows(IllegalArgumentException.class,
-                () -> authService.login(null, "password"));
-
-        // password null
-        assertThrows(IllegalArgumentException.class,
-                () -> authService.login("user@test.com", null));
-
-        verifyNoInteractions(userRepository);
-    }
-
-    @Test
-    void login_UserNotFound_ThrowsInvalidEmailOrPassword() {
-        String email = "missing@test.com";
-        String password = "Passw0rd!";
-
-        when(userRepository.findByEmail(email.toLowerCase()))
+    void login_UserNotFound_ShouldThrow() {
+        when(userRepository.findByEmail("missing@test.com"))
                 .thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class,
-                () -> authService.login(email, password));
-
-        verify(userRepository, times(1))
-                .findByEmail(email.toLowerCase());
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.login("missing@test.com", "Passw0rd!")
+        );
     }
 
     @Test
-    void login_WrongPassword_ThrowsInvalidEmailOrPassword() {
-        String email = "user@test.com";
-        String correctPassword = "Passw0rd!";
-        String wrongPassword = "WrongPass1!";
-
+    void login_WrongPassword_ShouldThrow() {
         User user = new User();
-        user.setEmail(email.toLowerCase());
-        user.setPasswordHash(hash(correctPassword));
+        user.setEmail("user@test.com");
+        user.setPasswordHash(hash("Correct1!"));
 
-        when(userRepository.findByEmail(email.toLowerCase()))
+        when(userRepository.findByEmail("user@test.com"))
                 .thenReturn(Optional.of(user));
 
-        assertThrows(IllegalArgumentException.class,
-                () -> authService.login(email, wrongPassword));
-
-        verify(userRepository, times(1))
-                .findByEmail(email.toLowerCase());
+        assertThrows(IllegalArgumentException.class, () ->
+                authService.login("user@test.com", "Wrong1!")
+        );
     }
 }

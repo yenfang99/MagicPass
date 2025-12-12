@@ -35,10 +35,12 @@
       <!-- Show user info and logout when logged in -->
       <th:block th:if="${session.currentUser != null}">
   <a class="user-info"
-     th:href="@{/user/profile}"
-     th:text="${session.currentUser.email}">
-    user@example.com
-  </a>
+   th:href="@{/user/profile}"
+   th:text="${(session.currentUser.name != null and !#strings.isEmpty(session.currentUser.name))
+              ? session.currentUser.name
+              : session.currentUser.email}">
+  Username
+</a>
   <a class="nav-link logout-link" href="/logout">Logout</a>
 </th:block>
 

@@ -2,32 +2,23 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8"/>
-
   <title>Create Account</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
-
-
-  <!-- Include Header Styles -->
   <th:block th:replace="~{fragments/header :: header-styles}"></th:block>
 </head>
 <body>
 
-  
-  <!-- Include Header Fragment -->
-  <div th:replace="~{fragments/header :: header}"></div>
-
+<div th:replace="~{fragments/header :: header}"></div>
 
 <main class="container">
   <section class="card">
     <h2 style="margin-top:0;">Create your MagicPass account</h2>
     <p class="muted" style="margin-top:6px;">
-      Register with your email and password to purchase tickets as a member.
+      Register with your details to purchase tickets as a member.
     </p>
 
-    <!-- error message -->
     <div th:if="${error}" class="alert" th:text="${error}"></div>
 
-    <!-- success message (rare here, mostly on login page) -->
     <div th:if="${success}"
          class="alert"
          style="border-color:rgba(22,163,74,.35);
@@ -36,37 +27,76 @@
          th:text="${success}"></div>
 
     <form method="post" action="/register" class="grid">
+
+      <div class="field">
+        <div class="label">Name</div>
+        <input class="input"
+               type="text"
+               name="name"
+               placeholder="Your full name"
+               th:value="${name}"
+               required>
+      </div>
+
       <div class="field">
         <div class="label">Email</div>
         <input class="input"
                type="email"
                name="email"
                placeholder="you@example.com"
+               th:value="${email}"
                required>
       </div>
 
       <div class="field">
-  <div class="label">Password</div>
-  <input class="input"
-         id="password"
-         type="password"
-         name="password"
-         minlength="8"
-         required>
-  <div class="hint">At least 8 characters and one special symbol (e.g. ! @ #).</div>
-</div>
+        <div class="label">Phone Number</div>
+        <input class="input"
+               type="text"
+               name="phone"
+               placeholder="e.g. 0176989118"
+               th:value="${phone}"
+               required>
+        <div class="hint">Digits only (9–12 digits).</div>
+      </div>
 
-<div class="field">
-  <div class="label">Confirm Password</div>
-  <input class="input"
-         id="confirmPassword"
-         type="password"
-         name="confirmPassword"
-         minlength="8"
-         required>
-</div>
+      <div class="field">
+        <div class="label">Gender</div>
+        <select class="input" name="gender" required>
+          <option value="" disabled th:selected="${gender == null}">Select</option>
+          <option value="F" th:selected="${gender == 'F'}">Female</option>
+          <option value="M" th:selected="${gender == 'M'}">Male</option>
+        </select>
+      </div>
 
+      <div class="field">
+        <div class="label">Birthday</div>
+        <input class="input"
+               type="date"
+               name="birthday"
+               th:value="${birthday}"
+               required>
+      </div>
 
+      <div class="field">
+        <div class="label">Password</div>
+        <input class="input"
+               id="password"
+               type="password"
+               name="password"
+               minlength="8"
+               required>
+        <div class="hint">At least 8 characters and one special symbol (e.g. ! @ #).</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Confirm Password</div>
+        <input class="input"
+               id="confirmPassword"
+               type="password"
+               name="confirmPassword"
+               minlength="8"
+               required>
+      </div>
 
       <div class="actions">
         <button type="submit" class="btn btn-primary">Register</button>
@@ -75,14 +105,12 @@
     </form>
   </section>
 </main>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const passwordInput = document.getElementById('password');
   const confirmInput  = document.getElementById('confirmPassword');
-
-  if (!passwordInput || !confirmInput) {
-    return;
-  }
+  if (!passwordInput || !confirmInput) return;
 
   const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
 
@@ -91,11 +119,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const isValid = value.length >= 8 && specialCharRegex.test(value);
 
     passwordInput.classList.remove('is-valid', 'is-invalid');
-
-    if (value.length === 0) {
-      return; // nothing typed → keep normal blue
-    }
-
+    if (value.length === 0) return;
     passwordInput.classList.add(isValid ? 'is-valid' : 'is-invalid');
   }
 
@@ -104,25 +128,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const match = value.length > 0 && value === passwordInput.value;
 
     confirmInput.classList.remove('is-valid', 'is-invalid');
-
-    if (value.length === 0) {
-      return;
-    }
-
+    if (value.length === 0) return;
     confirmInput.classList.add(match ? 'is-valid' : 'is-invalid');
   }
 
-  // typing
   passwordInput.addEventListener('input', function () {
     updatePasswordState();
-    if (confirmInput.value.length > 0) {
-      updateConfirmState();
-    }
+    if (confirmInput.value.length > 0) updateConfirmState();
   });
 
   confirmInput.addEventListener('input', updateConfirmState);
 
-  // blur → back to normal blue
   passwordInput.addEventListener('blur', function () {
     passwordInput.classList.remove('is-valid', 'is-invalid');
   });
