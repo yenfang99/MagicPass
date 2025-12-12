@@ -189,4 +189,130 @@ class MembershipControllerTest {
 
         verify(membershipService, times(1)).getMembershipByMembershipId(membershipId);
     }
+
+    // NEW TESTS TO IMPROVE COVERAGE
+
+    @Test
+    void testPurchaseMembership_Success() throws Exception {
+        // Given - successful Stripe session creation
+        session.setAttribute("currentUser", user);
+
+        com.stripe.model.checkout.Session stripeSession = mock(com.stripe.model.checkout.Session.class);
+        when(stripeSession.getUrl()).thenReturn("https://checkout.stripe.com/test-session");
+
+        when(membershipTypeService.getMembershipTypeById(1L)).thenReturn(silverType);
+        when(membershipService.canPurchaseMembershipType(1L, silverType)).thenReturn(null);
+        when(stripeService.createCheckoutSession(any(), any(), any(), any())).thenReturn(stripeSession);
+
+        // When & Then
+        mockMvc.perform(post("/membership/purchase")
+                        .param("membershipTypeId", "1")
+                        .session(session))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("https://checkout.stripe.com/test-session"));
+
+        verify(stripeService, times(1)).createCheckoutSession(any(), any(), any(), any());
+    }
+
+    @Test
+    void testPurchaseMembership_StripeException() throws Exception {
+        // Given - Stripe throws exception
+        session.setAttribute("currentUser", user);
+
+        when(membershipTypeService.getMembershipTypeById(1L)).thenReturn(silverType);
+        when(membershipService.canPurchaseMembershipType(1L, silverType)).thenReturn(null);
+        when(stripeService.createCheckoutSession(any(), any(), any(), any()))
+                .thenThrow(new RuntimeException("Stripe API error"));
+
+        // When & Then
+        mockMvc.perform(post("/membership/purchase")
+                        .param("membershipTypeId", "1")
+                        .session(session))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/membership"))
+                .andExpect(flash().attributeExists("error"));
+    }
+
+    @Test
+    void testPaymentSuccess_PaidStatus() throws Exception {
+        // Given - successful payment
+        com.stripe.model.checkout.Session stripeSession = mock(com.stripe.model.checkout.Session.class);
+        java.util.Map<String, String> metadata = new java.util.HashMap<>();
+        metadata.put("userId", "1");
+        metadata.put("membershipTypeId", "1");
+
+        when(stripeSession.getPaymentStatus()).thenReturn("paid");
+        when(stripeSession.getMetadata()).thenReturn(metadata);
+        when(stripeService.retrieveSession("sess_123")).thenReturn(stripeSession);
+        when(membershipTypeService.getMembershipTypeById(1L)).thenReturn(silverType);
+        when(membershipService.purchaseMembership(1L, silverType)).thenReturn(activeSilverMembership);
+
+        // When & Then
+        mockMvc.perform(get("/membership/success")
+                        .param("session_id", "sess_123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/membership/confirmation?id=MEM-12345678"))
+                .andExpect(flash().attributeExists("success"));
+
+        verify(membershipService, times(1)).purchaseMembership(1L, silverType);
+    }
+
+    @Test
+    void testPaymentSuccess_NotPaid() throws Exception {
+        // Given - payment not completed
+        com.stripe.model.checkout.Session stripeSession = mock(com.stripe.model.checkout.Session.class);
+        when(stripeSession.getPaymentStatus()).thenReturn("unpaid");
+        when(stripeService.retrieveSession("sess_123")).thenReturn(stripeSession);
+
+        // When & Then
+        mockMvc.perform(get("/membership/success")
+                        .param("session_id", "sess_123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/membership"))
+                .andExpect(flash().attributeExists("error"));
+
+        verify(membershipService, never()).purchaseMembership(any(), any());
+    }
+
+    @Test
+    void testPaymentSuccess_InactiveMembershipType() throws Exception {
+        // Given - membership type became inactive
+        com.stripe.model.checkout.Session stripeSession = mock(com.stripe.model.checkout.Session.class);
+        java.util.Map<String, String> metadata = new java.util.HashMap<>();
+        metadata.put("userId", "1");
+        metadata.put("membershipTypeId", "1");
+
+        MembershipType inactiveType = new MembershipType();
+        inactiveType.setId(1L);
+        inactiveType.setActive(false);
+
+        when(stripeSession.getPaymentStatus()).thenReturn("paid");
+        when(stripeSession.getMetadata()).thenReturn(metadata);
+        when(stripeService.retrieveSession("sess_123")).thenReturn(stripeSession);
+        when(membershipTypeService.getMembershipTypeById(1L)).thenReturn(inactiveType);
+
+        // When & Then
+        mockMvc.perform(get("/membership/success")
+                        .param("session_id", "sess_123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/membership"))
+                .andExpect(flash().attributeExists("error"));
+
+        verify(membershipService, never()).purchaseMembership(any(), any());
+    }
+
+    @Test
+    void testPaymentSuccess_Exception() throws Exception {
+        // Given - error retrieving session
+        when(stripeService.retrieveSession("sess_123"))
+                .thenThrow(new RuntimeException("Session not found"));
+
+        // When & Then
+        mockMvc.perform(get("/membership/success")
+                        .param("session_id", "sess_123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/membership"))
+                .andExpect(flash().attributeExists("error"));
+    }
+
 }
