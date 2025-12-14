@@ -2,6 +2,7 @@ package com.app.MagicPass.controller;
 
 import com.app.MagicPass.model.Order;
 import com.app.MagicPass.repository.OrderRepository;
+import com.app.MagicPass.service.DatePolicyService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +14,14 @@ public class AdminTicketController {
 
     private final OrderRepository orderRepository;
     private final com.app.MagicPass.repository.UserRepository userRepository;
+    private final DatePolicyService datePolicyService;
 
-    public AdminTicketController(OrderRepository orderRepository, com.app.MagicPass.repository.UserRepository userRepository) {
+    public AdminTicketController(OrderRepository orderRepository,
+                                  com.app.MagicPass.repository.UserRepository userRepository,
+                                  DatePolicyService datePolicyService) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
+        this.datePolicyService = datePolicyService;
     }
 
     @GetMapping
@@ -34,7 +39,28 @@ public class AdminTicketController {
     }
 
     @PostMapping("/create")
-    public String createTicket(@ModelAttribute Order ticket, RedirectAttributes ra) {
+    public String createTicket(@ModelAttribute Order ticket, RedirectAttributes ra, Model model) {
+        // Validate reservation date
+        if (ticket.getReservationDate() == null) {
+            ra.addFlashAttribute("error", "Please select a reservation date.");
+            ra.addFlashAttribute("ticket", ticket);
+            return "redirect:/admin/tickets/create";
+        }
+
+        if (!datePolicyService.isWithin7Days(ticket.getReservationDate())) {
+            ra.addFlashAttribute("error", "Invalid reservation date. Please choose a date from today within the next 7 days.");
+            ra.addFlashAttribute("ticket", ticket);
+            return "redirect:/admin/tickets/create";
+        }
+
+        // Validate at least one ticket is selected
+        int totalQty = ticket.getAdultQty() + ticket.getStudentQty() + ticket.getChildQty();
+        if (totalQty <= 0) {
+            ra.addFlashAttribute("error", "Please select at least 1 ticket.");
+            ra.addFlashAttribute("ticket", ticket);
+            return "redirect:/admin/tickets/create";
+        }
+
         try {
             orderRepository.save(ticket);
             ra.addFlashAttribute("success", "Ticket (order) created successfully!");
@@ -62,6 +88,24 @@ public class AdminTicketController {
 
     @PostMapping("/edit/{id}")
     public String updateTicket(@PathVariable Long id, @ModelAttribute Order ticket, RedirectAttributes ra) {
+        // Validate reservation date
+        if (ticket.getReservationDate() == null) {
+            ra.addFlashAttribute("error", "Please select a reservation date.");
+            return "redirect:/admin/tickets/edit/" + id;
+        }
+
+        if (!datePolicyService.isWithin7Days(ticket.getReservationDate())) {
+            ra.addFlashAttribute("error", "Invalid reservation date. Please choose a date from today within the next 7 days.");
+            return "redirect:/admin/tickets/edit/" + id;
+        }
+
+        // Validate at least one ticket is selected
+        int totalQty = ticket.getAdultQty() + ticket.getStudentQty() + ticket.getChildQty();
+        if (totalQty <= 0) {
+            ra.addFlashAttribute("error", "Please select at least 1 ticket.");
+            return "redirect:/admin/tickets/edit/" + id;
+        }
+
         try {
             return orderRepository.findById(id)
                     .map(existing -> {

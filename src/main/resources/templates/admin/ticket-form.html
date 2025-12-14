@@ -343,7 +343,7 @@
           </label>
           <input class="enhanced-input" type="date" id="reservationDate" th:field="*{reservationDate}" required/>
           <div class="field-hint">
-            <span>Park visit date</span>
+            <span>Must be from today within the next 7 days</span>
           </div>
         </div>
       </div>
@@ -461,11 +461,29 @@
             <span class="required-mark">*</span>
           </label>
           <select class="enhanced-input" id="status" th:field="*{status}" required style="cursor: pointer;">
-            <option value="PREVIEW">Preview</option>
             <option value="PAID">Paid</option>
           </select>
           <div class="field-hint">
             <span>Current payment status</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr; gap: 24px;">
+        <div class="form-field">
+          <label class="field-label" for="paymentMethod">
+            <span>Payment Method</span>
+            <span class="required-mark">*</span>
+          </label>
+          <select class="enhanced-input" id="paymentMethod" th:field="*{paymentMethod}" required style="cursor: pointer;">
+            <option value="">-- Select Payment Method --</option>
+            <option value="CASH">Cash</option>
+            <option value="CARD">Card</option>
+            <option value="FPX">FPX (Online Banking)</option>
+            <option value="GRABPAY">GrabPay</option>
+          </select>
+          <div class="field-hint">
+            <span>Select the payment method used for this order</span>
           </div>
         </div>
       </div>
@@ -503,10 +521,30 @@
     const form = document.querySelector('form[th\\:action]') || document.querySelector('form');
     const orderCodeEl = document.getElementById('orderCode');
     const userEl = document.getElementById('userId');
+    const paymentMethodEl = document.getElementById('paymentMethod');
+    const reservationDateEl = document.getElementById('reservationDate');
 
     function toIntSafe(v){
       const n = parseInt(v, 10);
       return isNaN(n) || n < 0 ? 0 : n;
+    }
+
+    // Set min and max date for reservation date (today to 7 days from today)
+    function setDateLimits() {
+      if (!reservationDateEl) return;
+      const today = new Date();
+      const maxDate = new Date();
+      maxDate.setDate(today.getDate() + 7);
+
+      const formatDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
+      reservationDateEl.setAttribute('min', formatDate(today));
+      reservationDateEl.setAttribute('max', formatDate(maxDate));
     }
 
     function computePrices(){
@@ -529,9 +567,28 @@
       const orderCode = orderCodeEl ? (orderCodeEl.value || '') : '';
       const orderOk = /^OD[0-9]{4}$/.test(orderCode);
       const userOk = userEl && userEl.value !== '';
+      const paymentMethodOk = paymentMethodEl && paymentMethodEl.value !== '';
+
+      // Validate reservation date
+      const reservationDate = reservationDateEl ? reservationDateEl.value : '';
+      const dateOk = reservationDate !== '';
+      let dateWithinRange = true;
+      if (dateOk && reservationDateEl) {
+        const selectedDate = new Date(reservationDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const maxDate = new Date();
+        maxDate.setDate(today.getDate() + 7);
+        maxDate.setHours(23, 59, 59, 999);
+        dateWithinRange = selectedDate >= today && selectedDate <= maxDate;
+      }
+
       let msgs = [];
       if (!orderOk) msgs.push('Order Code must match format OD0000.');
       if (!userOk) msgs.push('Please select an existing user.');
+      if (!dateOk) msgs.push('Please select a reservation date.');
+      else if (!dateWithinRange) msgs.push('Reservation date must be from today within the next 7 days.');
+      if (!paymentMethodOk) msgs.push('Please select a payment method.');
       if (totalTickets < 1) msgs.push('At least one ticket must be selected.');
       if (msgs.length){
         e.preventDefault();
@@ -549,7 +606,12 @@
     });
 
     if (form) form.addEventListener('submit', validateForm);
-    window.addEventListener('load', computePrices);
+
+    // Initialize date limits and compute prices on load
+    window.addEventListener('load', function() {
+      setDateLimits();
+      computePrices();
+    });
   })();
 </script>
 
