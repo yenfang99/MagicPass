@@ -13,8 +13,10 @@
 
 <main class="container">
   <section class="card">
-    <h2 style="margin-top:0;">Payment Successful</h2>
-    <p class="muted" style="margin-top:6px;">Thank you. Here is your receipt.</p>
+    <h2 th:if="${order.status == 'PAID'}" style="margin-top:0;">Payment Successful</h2>
+    <h2 th:if="${order.status == 'UNPAID'}" style="margin-top:0;">Booking Reserved</h2>
+    <p th:if="${order.status == 'PAID'}" class="muted" style="margin-top:6px;">Thank you. Here is your receipt.</p>
+    <p th:if="${order.status == 'UNPAID'}" class="muted" style="margin-top:6px;">Your booking has been reserved. Please pay at the counter upon arrival.</p>
 
     <table class="table" style="margin-top:14px;">
       <tr>
@@ -31,11 +33,15 @@
       </tr>
     <tr>
       <td class="muted">Status</td>
-      <td class="right" th:text="${order.status}">PAID</td>
+      <td class="right" th:text="${order.status}" 
+          th:style="${order.status == 'UNPAID' ? 'color: #dc3545; font-weight: bold;' : 'color: #28a745; font-weight: bold;'}">PAID</td>
     </tr>
   </table>
-    <p th:if="${order.paymentMethod == 'CASH'}" class="muted" style="margin-top:6px;">
-      Payment method: Cash. Please present this receipt at the counter.
+    <p th:if="${order.paymentMethod == 'CASH' and order.status == 'UNPAID'}" class="muted" style="margin-top:6px; color: #dc3545;">
+      Payment method: Cash. Please present this receipt and pay at the counter upon arrival.
+    </p>
+    <p th:if="${order.paymentMethod == 'CASH' and order.status == 'PAID'}" class="muted" style="margin-top:6px;">
+      Payment method: Cash. Payment received. Thank you!
     </p>
 
     <h3 style="margin-top:18px; margin-bottom:10px;">Order Details</h3>

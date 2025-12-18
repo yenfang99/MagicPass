@@ -1,24 +1,25 @@
 package com.app.MagicPass.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.app.MagicPass.dto.CheckoutRequest;
 import com.app.MagicPass.dto.PricingBreakdown;
 import com.app.MagicPass.model.Order;
 import com.app.MagicPass.repository.OrderRepository;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
@@ -75,7 +76,7 @@ class OrderServiceTest {
             order.getDiscount() == pricing.getDiscount() &&
             order.getTax() == pricing.getTax() &&
             order.getGrandTotal() == pricing.getGrandTotal() &&
-            "PAID".equals(order.getStatus()) &&
+            "UNPAID".equals(order.getStatus()) &&
             "CASH".equals(order.getPaymentMethod()) &&
             Double.valueOf(120.0).equals(order.getCashReceived()) &&
             Double.valueOf(25.0).equals(order.getCashChange())

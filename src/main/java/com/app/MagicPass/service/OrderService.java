@@ -34,7 +34,8 @@ public class OrderService {
     order.setTax(pricing.getTax());
     order.setGrandTotal(pricing.getGrandTotal());
 
-    order.setStatus("PAID");
+    // Cash payments are UNPAID until customer pays at counter; online payments are PAID
+    order.setStatus("CASH".equals(paymentMethod) ? "UNPAID" : "PAID");
     order.setPaymentMethod(paymentMethod);
     order.setCashReceived(cashReceived);
     order.setCashChange(cashChange);
